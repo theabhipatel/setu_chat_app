@@ -28,28 +28,38 @@ export default function MainLayout({
     const supabase = createClient();
 
     const getUser = async () => {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
 
-      if (!authUser) {
-        router.push("/login");
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", authUser.id)
-        .single();
-
-      if (profile) {
-        setUser(profile);
-
-        if (!profile.username) {
-          router.push("/select-username");
+        if (!authUser) {
+          setUser(null);
+          router.push("/login");
           return;
         }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        if (profile) {
+          setUser(profile);
+
+          if (!profile.username) {
+            router.push("/select-username");
+            return;
+          }
+        } else {
+          setUser(null);
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Failed to get user:", error);
+        setUser(null);
+        router.push("/login");
       }
     };
 
