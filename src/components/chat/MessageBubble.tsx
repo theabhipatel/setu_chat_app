@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { getInitials, formatTime, formatFileSize } from "@/lib/utils";
 import {
   Reply,
@@ -17,29 +10,23 @@ import {
   Edit3,
   Trash2,
   Smile,
-  MoreHorizontal,
   FileText,
-  Check,
   CheckCheck,
 } from "lucide-react";
+import Image from "next/image";
 import type { MessageWithSender } from "@/types";
 
 interface MessageBubbleProps {
   message: MessageWithSender;
   isOwn: boolean;
   showAvatar: boolean;
-  conversationId: string;
 }
-
-const quickReactions = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
 export function MessageBubble({
   message,
   isOwn,
   showAvatar,
-  conversationId,
 }: MessageBubbleProps) {
-  const { user } = useAuthStore();
   const { setReplyingTo } = useChatStore();
   const [showActions, setShowActions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -179,9 +166,11 @@ export function MessageBubble({
               {/* Image */}
               {message.message_type === "image" && message.file_url && (
                 <div className="mb-2">
-                  <img
+                  <Image
                     src={message.file_url}
                     alt="Shared image"
+                    width={400}
+                    height={256}
                     className="rounded-lg max-h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   />
                 </div>

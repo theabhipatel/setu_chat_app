@@ -120,6 +120,7 @@ export default function ConversationPage() {
         scrollToBottom();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, user?.id, scrollToBottom]);
 
   // Send message
@@ -215,7 +216,6 @@ export default function ConversationPage() {
                   index === 0 ||
                   messages[index - 1]?.sender_id !== message.sender_id
                 }
-                conversationId={conversationId}
               />
             ))}
           </div>

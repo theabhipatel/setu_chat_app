@@ -33,7 +33,7 @@ export default function GroupsSection() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {groupFeatures.map((f, i) => (
+              {groupFeatures.map((f) => (
                 <div
                   key={f.title}
                   className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted/50 transition-colors"

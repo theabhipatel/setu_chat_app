@@ -8,11 +8,8 @@ import {
   Paperclip,
   Smile,
   X,
-  Image as ImageIcon,
-  File,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import type { MessageWithSender } from "@/types";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -32,7 +29,8 @@ interface MessageInputProps {
 export function MessageInput({
   onSend,
   onTyping,
-  conversationId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  conversationId: _conversationId,
 }: MessageInputProps) {
   const { replyingTo, setReplyingTo } = useChatStore();
   const [message, setMessage] = useState("");
@@ -190,7 +188,7 @@ export function MessageInput({
             <div className="absolute bottom-12 right-0 z-50">
               <EmojiPicker
                 onEmojiClick={handleEmojiClick}
-                // @ts-ignore - theme type mismatch
+                // @ts-expect-error - theme type mismatch
                 theme="auto"
                 height={350}
                 width={350}
