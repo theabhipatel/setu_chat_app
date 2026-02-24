@@ -176,9 +176,6 @@ export default function DownloadSection() {
                 key={p.name}
                 className={`group relative rounded-2xl border border-border/30 bg-card/40 backdrop-blur-xl overflow-hidden transition-all duration-500 ${p.hoverShadow} hover:border-border/60 hover:-translate-y-1`}
               >
-                {/* Gradient accent bar */}
-                <div className={`h-1 bg-gradient-to-r ${p.gradient}`} />
-
                 <div className="p-6 flex flex-col items-center text-center">
                   {/* Real icon from CDN */}
                   <div className="mb-4">
