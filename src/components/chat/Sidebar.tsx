@@ -47,24 +47,34 @@ export function Sidebar() {
 
   const handleSelectUser = async (selectedUser: SearchResult) => {
     try {
+      console.log("[Sidebar] handleSelectUser called with:", selectedUser);
+      const requestBody = {
+        type: "private",
+        memberIds: [selectedUser.id],
+      };
+      console.log("[Sidebar] POST /api/conversations body:", requestBody);
+
       const res = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "private",
-          memberIds: [selectedUser.id],
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log("[Sidebar] Response status:", res.status);
       const data = await res.json();
+      console.log("[Sidebar] Response data:", data);
+
       if (data.data) {
+        console.log("[Sidebar] Conversation found/created:", data.data.id, "existing:", data.existing);
         if (!data.existing) {
           addConversation(data.data);
         }
         router.push(`/chat/${data.data.id}`);
+      } else {
+        console.error("[Sidebar] No conversation data in response. Error:", data.error);
       }
     } catch (error) {
-      console.error("Failed to create conversation:", error);
+      console.error("[Sidebar] Failed to create conversation:", error);
     }
   };
 

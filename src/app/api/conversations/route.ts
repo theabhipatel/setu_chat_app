@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 // Get all conversations for the current user
 export async function GET() {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
 
   const {
     data: { user },
@@ -14,7 +15,8 @@ export async function GET() {
   }
 
   // Get conversation IDs the user is a member of
-  const { data: memberOf } = await supabase
+  // Use service client to bypass RLS recursive policy on conversation_members
+  const { data: memberOf } = await serviceClient
     .from("conversation_members")
     .select("conversation_id")
     .eq("user_id", user.id);
@@ -26,7 +28,7 @@ export async function GET() {
   const conversationIds = memberOf.map((m) => m.conversation_id);
 
   // Get conversations with members and last message
-  const { data: conversations, error } = await supabase
+  const { data: conversations, error } = await serviceClient
     .from("conversations")
     .select(
       `
@@ -47,7 +49,7 @@ export async function GET() {
   // Get last message for each conversation
   const conversationsWithLastMessage = await Promise.all(
     (conversations || []).map(async (conv) => {
-      const { data: messages } = await supabase
+      const { data: messages } = await serviceClient
         .from("messages")
         .select(
           `
@@ -60,7 +62,7 @@ export async function GET() {
         .limit(1);
 
       // Get unread count
-      const { data: readReceipt } = await supabase
+      const { data: readReceipt } = await serviceClient
         .from("read_receipts")
         .select("last_read_at")
         .eq("conversation_id", conv.id)
@@ -69,7 +71,7 @@ export async function GET() {
 
       let unreadCount = 0;
       if (readReceipt) {
-        const { count } = await supabase
+        const { count } = await serviceClient
           .from("messages")
           .select("id", { count: "exact", head: true })
           .eq("conversation_id", conv.id)
@@ -92,21 +94,28 @@ export async function GET() {
 
 // Create a new conversation (private or group)
 export async function POST(request: Request) {
+  console.log("[API POST /api/conversations] Request received");
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.log("[API POST /api/conversations] Unauthorized - no user");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  console.log("[API POST /api/conversations] Authenticated user:", user.id);
+
   const body = await request.json();
   const { type, name, description, memberIds } = body;
+  console.log("[API POST /api/conversations] Request body:", { type, name, description, memberIds });
 
   if (type === "private") {
     if (!memberIds || memberIds.length !== 1) {
+      console.log("[API POST /api/conversations] Invalid memberIds for private chat:", memberIds);
       return NextResponse.json(
         { error: "Private chat requires exactly one other member" },
         { status: 400 }
@@ -114,16 +123,20 @@ export async function POST(request: Request) {
     }
 
     const otherUserId = memberIds[0];
+    console.log("[API POST /api/conversations] Looking for existing private conversation with:", otherUserId);
 
     // Check if private conversation already exists
-    const { data: existingMembers } = await supabase
+    // Use service client to bypass RLS recursive policy on conversation_members
+    const { data: existingMembers, error: existingMembersError } = await serviceClient
       .from("conversation_members")
       .select("conversation_id")
       .eq("user_id", user.id);
 
+    console.log("[API POST /api/conversations] User's conversations:", existingMembers?.length, "error:", existingMembersError?.message);
+
     if (existingMembers) {
       for (const member of existingMembers) {
-        const { data: conv } = await supabase
+        const { data: conv } = await serviceClient
           .from("conversations")
           .select("id, type")
           .eq("id", member.conversation_id)
@@ -131,7 +144,7 @@ export async function POST(request: Request) {
           .single();
 
         if (conv) {
-          const { data: otherMember } = await supabase
+          const { data: otherMember } = await serviceClient
             .from("conversation_members")
             .select("user_id")
             .eq("conversation_id", conv.id)
@@ -139,8 +152,9 @@ export async function POST(request: Request) {
             .single();
 
           if (otherMember) {
+            console.log("[API POST /api/conversations] Found existing conversation:", conv.id);
             // Return existing conversation
-            const { data: fullConv } = await supabase
+            const { data: fullConv, error: fullConvError } = await serviceClient
               .from("conversations")
               .select(
                 `
@@ -154,15 +168,17 @@ export async function POST(request: Request) {
               .eq("id", conv.id)
               .single();
 
+            console.log("[API POST /api/conversations] Returning existing conv:", fullConv?.id, "error:", fullConvError?.message);
             return NextResponse.json({ data: fullConv, existing: true });
           }
         }
       }
     }
+    console.log("[API POST /api/conversations] No existing private conversation found, creating new one");
   }
 
   // Create conversation
-  const { data: conversation, error: convError } = await supabase
+  const { data: conversation, error: convError } = await serviceClient
     .from("conversations")
     .insert({
       type: type || "private",
@@ -174,8 +190,11 @@ export async function POST(request: Request) {
     .single();
 
   if (convError) {
+    console.error("[API POST /api/conversations] Failed to create conversation:", convError.message);
     return NextResponse.json({ error: convError.message }, { status: 500 });
   }
+
+  console.log("[API POST /api/conversations] Created conversation:", conversation.id);
 
   // Add members
   const members = [
@@ -191,16 +210,19 @@ export async function POST(request: Request) {
     })),
   ];
 
-  const { error: membersError } = await supabase
+  console.log("[API POST /api/conversations] Inserting members:", members);
+
+  const { error: membersError } = await serviceClient
     .from("conversation_members")
     .insert(members);
 
   if (membersError) {
+    console.error("[API POST /api/conversations] Failed to insert members:", membersError.message);
     return NextResponse.json({ error: membersError.message }, { status: 500 });
   }
 
   // Return full conversation
-  const { data: fullConv } = await supabase
+  const { data: fullConv, error: fullConvError } = await serviceClient
     .from("conversations")
     .select(
       `
@@ -214,5 +236,6 @@ export async function POST(request: Request) {
     .eq("id", conversation.id)
     .single();
 
+  console.log("[API POST /api/conversations] Returning new conv:", fullConv?.id, "error:", fullConvError?.message);
   return NextResponse.json({ data: fullConv }, { status: 201 });
 }

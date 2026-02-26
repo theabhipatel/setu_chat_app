@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 // Add members to a group conversation
 export async function POST(
@@ -7,6 +7,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -23,7 +24,7 @@ export async function POST(
     role: "member",
   }));
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from("conversation_members")
     .insert(members);
 
@@ -32,7 +33,7 @@ export async function POST(
   }
 
   // Add system message
-  await supabase.from("messages").insert({
+  await serviceClient.from("messages").insert({
     conversation_id: params.id,
     sender_id: user.id,
     content: `added ${memberIds.length} member(s) to the group`,
@@ -48,6 +49,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +60,7 @@ export async function DELETE(
 
   const { userId } = await request.json();
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from("conversation_members")
     .delete()
     .eq("conversation_id", params.id)
@@ -70,7 +72,7 @@ export async function DELETE(
 
   // Add system message
   const isLeaving = userId === user.id;
-  await supabase.from("messages").insert({
+  await serviceClient.from("messages").insert({
     conversation_id: params.id,
     sender_id: user.id,
     content: isLeaving ? "left the group" : `removed a member from the group`,

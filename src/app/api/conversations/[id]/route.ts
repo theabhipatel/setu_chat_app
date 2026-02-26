@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 // Get conversation details
 export async function GET(
@@ -7,6 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -15,7 +16,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await serviceClient
     .from("conversations")
     .select(
       `
@@ -42,6 +43,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -57,7 +59,7 @@ export async function PATCH(
   if (body.description !== undefined) updates.description = body.description;
   if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url;
 
-  const { data, error } = await supabase
+  const { data, error } = await serviceClient
     .from("conversations")
     .update(updates)
     .eq("id", params.id)
@@ -77,6 +79,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -85,7 +88,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from("conversations")
     .delete()
     .eq("id", params.id)
