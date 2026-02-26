@@ -29,46 +29,69 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     setError("");
-    const supabase = createClient();
+    try {
+      console.log("[Login] Attempting sign in for:", data.email);
+      console.log("[Login] Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
+      const supabase = createClient();
 
-    if (authError) {
-      if (authError.message.includes("Email not confirmed")) {
-        setError(
-          "Please verify your email before logging in. Check your inbox."
-        );
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (authError) {
+        console.error("[Login] Auth error:", authError.message, authError);
+        if (authError.message.includes("Email not confirmed")) {
+          setError(
+            "Please verify your email before logging in. Check your inbox."
+          );
+          return;
+        }
+        setError(authError.message);
         return;
       }
-      setError(authError.message);
-      return;
-    }
 
-    // Check if email is verified in profiles
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_email_verified, auth_provider")
-        .eq("id", user.id)
-        .single();
+      console.log("[Login] Sign in successful, checking profile...");
 
-      if (profile?.auth_provider === "email" && !profile.is_email_verified) {
-        await supabase.auth.signOut();
+      // Check if email is verified in profiles
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        console.log("[Login] User found:", user.id);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_email_verified, auth_provider")
+          .eq("id", user.id)
+          .single();
+
+        console.log("[Login] Profile:", profile);
+
+        if (profile?.auth_provider === "email" && !profile.is_email_verified) {
+          await supabase.auth.signOut();
+          setError(
+            "Please verify your email before logging in. Check your inbox."
+          );
+          return;
+        }
+      }
+
+      console.log("[Login] Redirecting to /chat...");
+      router.push("/chat");
+      router.refresh();
+    } catch (err) {
+      console.error("[Login] Unexpected error:", err);
+      if (err instanceof TypeError && err.message === "Failed to fetch") {
         setError(
-          "Please verify your email before logging in. Check your inbox."
+          "Unable to reach the authentication server. This could mean the Supabase project is paused or your internet connection is down. Please check your Supabase dashboard."
         );
-        return;
+      } else {
+        setError(
+          `An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }
-
-    router.push("/chat");
-    router.refresh();
   };
 
   const handleGoogleLogin = async () => {
