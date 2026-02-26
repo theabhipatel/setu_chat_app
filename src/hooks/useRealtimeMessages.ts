@@ -1,42 +1,21 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { MessageWithSender } from "@/types";
 
 export function useRealtimeMessages(conversationId: string | null) {
-  const { addMessage, updateMessage } = useChatStore();
+  const addMessage = useChatStore((state) => state.addMessage);
+  const updateMessage = useChatStore((state) => state.updateMessage);
   const { user } = useAuthStore();
+  const userIdRef = useRef<string | null>(null);
 
-  const handleNewMessage = useCallback(
-    (payload: { new: MessageWithSender }) => {
-      const newMessage = payload.new;
-      if (newMessage.sender_id !== user?.id) {
-        // Fetch sender info
-        const supabase = createClient();
-        supabase
-          .from("profiles")
-          .select("id, username, first_name, last_name, avatar_url, is_online")
-          .eq("id", newMessage.sender_id)
-          .single()
-          .then(({ data: sender }) => {
-            if (sender) {
-              addMessage({ ...newMessage, sender } as MessageWithSender);
-            }
-          });
-      }
-    },
-    [addMessage, user?.id]
-  );
-
-  const handleUpdatedMessage = useCallback(
-    (payload: { new: MessageWithSender }) => {
-      updateMessage(payload.new.id, payload.new);
-    },
-    [updateMessage]
-  );
+  // Keep ref in sync
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -53,7 +32,27 @@ export function useRealtimeMessages(conversationId: string | null) {
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        handleNewMessage
+        (payload: { new: MessageWithSender }) => {
+          const newMessage = payload.new;
+          if (newMessage.sender_id !== userIdRef.current) {
+            // Fetch sender info
+            supabase
+              .from("profiles")
+              .select(
+                "id, username, first_name, last_name, avatar_url, is_online"
+              )
+              .eq("id", newMessage.sender_id)
+              .single()
+              .then(({ data: sender }) => {
+                if (sender) {
+                  addMessage({
+                    ...newMessage,
+                    sender,
+                  } as MessageWithSender);
+                }
+              });
+          }
+        }
       )
       .on(
         "postgres_changes",
@@ -63,12 +62,15 @@ export function useRealtimeMessages(conversationId: string | null) {
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        handleUpdatedMessage
+        (payload: { new: MessageWithSender }) => {
+          updateMessage(payload.new.id, payload.new);
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, handleNewMessage, handleUpdatedMessage]);
+    // addMessage and updateMessage are stable zustand selectors
+  }, [conversationId, addMessage, updateMessage]);
 }

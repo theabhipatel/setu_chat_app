@@ -1,73 +1,87 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export function usePresence() {
-  const { user, updateUser } = useAuthStore();
+  const { user } = useAuthStore();
+  const userIdRef = useRef<string | null>(null);
 
-  const updateOnlineStatus = useCallback(
-    async (isOnline: boolean) => {
-      if (!user) return;
-      const supabase = createClient();
-      await supabase
+  // Keep userIdRef in sync without causing re-renders
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
+
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+
+    const supabase = createClient();
+
+    // Set online on mount — fire and forget, no state update needed
+    supabase
+      .from("profiles")
+      .update({ is_online: true, last_seen: new Date().toISOString() })
+      .eq("id", userId)
+      .then();
+
+    // Set offline on window close/unload
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
+        JSON.stringify({
+          is_online: false,
+          last_seen: new Date().toISOString(),
+        })
+      );
+    };
+
+    const handleVisibilityChange = () => {
+      if (!userIdRef.current) return;
+      const isOnline = !document.hidden;
+      supabase
         .from("profiles")
         .update({
           is_online: isOnline,
           last_seen: new Date().toISOString(),
         })
-        .eq("id", user.id);
-
-      updateUser({ is_online: isOnline });
-    },
-    [user, updateUser]
-  );
-
-  useEffect(() => {
-    if (!user) return;
-
-    // Set online on mount
-    updateOnlineStatus(true);
-
-    // Set offline on window close/unload
-    const handleBeforeUnload = () => {
-      const supabase = createClient();
-      // Use sendBeacon for reliable offline status on page close
-      navigator.sendBeacon(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`,
-        JSON.stringify({ is_online: false, last_seen: new Date().toISOString() })
-      );
-      // Also attempt via supabase client
-      supabase
-        .from("profiles")
-        .update({ is_online: false, last_seen: new Date().toISOString() })
-        .eq("id", user.id);
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        updateOnlineStatus(false);
-      } else {
-        updateOnlineStatus(true);
-      }
+        .eq("id", userIdRef.current)
+        .then();
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Heartbeat to maintain online status
+    // Heartbeat to maintain online status — every 60 seconds
     const heartbeat = setInterval(() => {
-      if (!document.hidden) {
-        updateOnlineStatus(true);
+      if (!document.hidden && userIdRef.current) {
+        supabase
+          .from("profiles")
+          .update({
+            is_online: true,
+            last_seen: new Date().toISOString(),
+          })
+          .eq("id", userIdRef.current)
+          .then();
       }
-    }, 60000); // Every minute
+    }, 60000);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(heartbeat);
-      updateOnlineStatus(false);
+
+      // Set offline on cleanup
+      supabase
+        .from("profiles")
+        .update({
+          is_online: false,
+          last_seen: new Date().toISOString(),
+        })
+        .eq("id", userId)
+        .then();
     };
-  }, [user, updateOnlineStatus]);
+    // Only depend on user.id — NOT the entire user object
+  }, [user?.id]);
 }
