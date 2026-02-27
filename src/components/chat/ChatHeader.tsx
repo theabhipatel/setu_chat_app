@@ -126,7 +126,13 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
                 Group Settings
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (!isGroup && otherMember?.user_id) {
+                  router.push(`/user/${otherMember.user_id}`);
+                }
+              }}
+            >
               <Users className="mr-2 h-4 w-4" />
               {isGroup ? "View Members" : "View Profile"}
             </DropdownMenuItem>
