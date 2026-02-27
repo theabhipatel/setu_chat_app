@@ -148,7 +148,7 @@ export default function RegisterPage() {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
-                  placeholder="John"
+                  placeholder="Abhi"
                   {...register("firstName")}
                   className="h-11"
                 />
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
-                  placeholder="Doe"
+                  placeholder="Patel"
                   {...register("lastName")}
                   className="h-11"
                 />
@@ -178,7 +178,7 @@ export default function RegisterPage() {
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                placeholder="johndoe"
+                placeholder="theabhipatel"
                 {...register("username")}
                 className="h-11"
               />
