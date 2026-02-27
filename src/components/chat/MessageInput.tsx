@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +38,7 @@ export function MessageInput({
   const [uploading, setUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -57,7 +58,40 @@ export function MessageInput({
     }
   }, [replyingTo]);
 
-  const handleSend = () => {
+  // Close emoji picker on click outside
+  useEffect(() => {
+    if (!showEmoji) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node)
+      ) {
+        setShowEmoji(false);
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowEmoji(false);
+        textareaRef.current?.focus();
+      }
+    };
+
+    // Delay adding listener to avoid the toggle click from immediately closing
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [showEmoji]);
+
+  const handleSend = useCallback(() => {
     if (!message.trim()) return;
     onSend(message.trim());
     setMessage("");
@@ -66,7 +100,7 @@ export function MessageInput({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
-  };
+  }, [message, onSend, setReplyingTo]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -151,9 +185,9 @@ export function MessageInput({
         </div>
       )}
 
-      <div className="flex items-end gap-2">
+      <div className="flex items-center gap-2">
         {/* File upload */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <input
             ref={fileInputRef}
             type="file"
@@ -164,7 +198,7 @@ export function MessageInput({
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full shrink-0 text-muted-foreground hover:text-foreground"
+            className="rounded-full h-10 w-10 text-muted-foreground hover:text-foreground"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
@@ -183,17 +217,17 @@ export function MessageInput({
             }}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="w-full resize-none rounded-2xl border border-input bg-background px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground min-h-[42px] max-h-[120px]"
+            className="w-full resize-none rounded-2xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground min-h-[42px] max-h-[120px]"
             rows={1}
           />
         </div>
 
         {/* Emoji picker */}
-        <div className="relative">
+        <div className="relative shrink-0" ref={emojiPickerRef}>
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full shrink-0 text-muted-foreground hover:text-foreground"
+            className="rounded-full h-10 w-10 text-muted-foreground hover:text-foreground"
             onClick={() => setShowEmoji(!showEmoji)}
           >
             <Smile className="h-5 w-5" />
