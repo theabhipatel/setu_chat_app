@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AnimatedEmoji } from "@/components/chat/AnimatedEmoji";
 import { getInitials, formatTime, formatFileSize } from "@/lib/utils";
+import { getEmojiInfo, getEmojiSize } from "@/lib/emoji";
 import {
   Reply,
   Forward,
@@ -31,6 +33,14 @@ export function MessageBubble({
   const [showActions, setShowActions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content || "");
+
+  // Detect emoji-only messages (1-3 emojis, no other text)
+  const emojiInfo = useMemo(() => {
+    if (message.message_type !== "text" || !message.content) {
+      return { isEmojiOnly: false, count: 0, emojis: [] as string[] };
+    }
+    return getEmojiInfo(message.content);
+  }, [message.content, message.message_type]);
 
   const handleReaction = async (reaction: string) => {
     try {
@@ -140,10 +150,14 @@ export function MessageBubble({
           <div className="relative">
             <div
               data-message-id={message.id}
-              className={`px-4 py-2 rounded-2xl break-words ${
-                isOwn
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted text-foreground rounded-bl-md"
+              className={`rounded-2xl break-words ${
+                emojiInfo.isEmojiOnly && !message.reply_message
+                  ? "px-1 py-1"
+                  : `px-4 py-2 ${
+                      isOwn
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-muted text-foreground rounded-bl-md"
+                    }`
               }`}
             >
               {/* Reply indicator — INSIDE the bubble */}
@@ -220,7 +234,7 @@ export function MessageBubble({
                 </a>
               )}
 
-              {/* Text content */}
+              {/* Text content — emoji-only or regular */}
               {isEditing ? (
                 <div className="space-y-2">
                   <textarea
@@ -245,6 +259,16 @@ export function MessageBubble({
                     </button>
                   </div>
                 </div>
+              ) : emojiInfo.isEmojiOnly && !message.reply_message ? (
+                <div className="flex items-center gap-1 py-1">
+                  {emojiInfo.emojis.map((emoji, i) => (
+                    <AnimatedEmoji
+                      key={i}
+                      emoji={emoji}
+                      size={getEmojiSize(emojiInfo.count)}
+                    />
+                  ))}
+                </div>
               ) : (
                 message.content && (
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -259,14 +283,22 @@ export function MessageBubble({
                   isOwn ? "justify-end" : "justify-start"
                 }`}
               >
-                <span className="text-[10px] opacity-60">
+                <span className={`text-[10px] ${
+                  emojiInfo.isEmojiOnly && !message.reply_message
+                    ? "text-muted-foreground"
+                    : "opacity-60"
+                }`}>
                   {formatTime(message.created_at)}
                 </span>
                 {message.is_edited && (
                   <span className="text-[10px] opacity-50">edited</span>
                 )}
                 {isOwn && (
-                  <CheckCheck className="h-3 w-3 opacity-60" />
+                  <CheckCheck className={`h-3 w-3 ${
+                    emojiInfo.isEmojiOnly && !message.reply_message
+                      ? "text-muted-foreground"
+                      : "opacity-60"
+                  }`} />
                 )}
               </div>
             </div>
