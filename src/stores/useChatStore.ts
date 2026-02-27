@@ -15,6 +15,7 @@ const sortByLatest = (conversations: ConversationWithDetails[]) =>
 
 interface ChatState {
   conversations: ConversationWithDetails[];
+  conversationsLoaded: boolean;
   activeConversation: ConversationWithDetails | null;
   messages: MessageWithSender[];
   typingUsers: TypingUser[];
@@ -46,6 +47,7 @@ interface ChatState {
 
 export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
+  conversationsLoaded: false,
   activeConversation: null,
   messages: [],
   typingUsers: [],
@@ -53,7 +55,7 @@ export const useChatStore = create<ChatState>((set) => ({
   isSidebarOpen: true,
 
   setConversations: (conversations) =>
-    set({ conversations: sortByLatest(conversations) }),
+    set({ conversations: sortByLatest(conversations), conversationsLoaded: true }),
   addConversation: (conversation) =>
     set((state) => ({
       conversations: sortByLatest([conversation, ...state.conversations]),

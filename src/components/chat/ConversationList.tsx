@@ -14,10 +14,10 @@ import type { ConversationWithDetails } from "@/types";
 export function ConversationList() {
   const router = useRouter();
   const pathname = usePathname();
-  const { conversations } = useChatStore();
+  const { conversations, conversationsLoaded } = useChatStore();
   const { user } = useAuthStore();
 
-  if (!conversations) return <ConversationListSkeleton />;
+  if (!conversationsLoaded) return <ConversationListSkeleton />;
 
   if (conversations.length === 0) {
     return (
