@@ -198,12 +198,30 @@ export function MessageBubble({
   const handleDelete = async () => {
     // Guard: don't call API with temp IDs
     if (message.id.startsWith("temp-")) return;
+
+    // Save original state for rollback
+    const previousState = {
+      content: message.content,
+      file_url: message.file_url,
+      is_deleted: message.is_deleted,
+    };
+
+    // Optimistic update — immediately show "This message was deleted"
+    updateMessage(message.id, {
+      is_deleted: true,
+      content: null,
+      file_url: null,
+    });
+
     try {
-      await fetch(`/api/messages/${message.id}`, {
+      const res = await fetch(`/api/messages/${message.id}`, {
         method: "DELETE",
       });
+      if (!res.ok) throw new Error("API error");
     } catch (error) {
       console.error("Failed to delete message:", error);
+      // Rollback on failure
+      updateMessage(message.id, previousState);
     }
   };
 
@@ -227,10 +245,18 @@ export function MessageBubble({
       <div
         className={`flex ${isOwn ? "justify-end" : "justify-start"} py-0.5`}
       >
-        <div className="max-w-[70%] px-4 py-2 rounded-2xl bg-muted/50">
-          <p className="text-sm text-muted-foreground italic">
-            This message was deleted
-          </p>
+        <div
+          className={`flex items-start gap-2 max-w-[70%] ${
+            isOwn ? "flex-row-reverse" : "flex-row"
+          }`}
+        >
+          {/* Avatar spacer to match normal messages */}
+          {!isOwn && <div className="w-7 shrink-0" />}
+          <div className="px-4 py-2 rounded-2xl bg-muted/50">
+            <p className="text-sm text-muted-foreground italic">
+              This message was deleted
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -241,7 +267,7 @@ export function MessageBubble({
       className={`flex ${isOwn ? "justify-end" : "justify-start"} py-0.5 group message-enter`}
     >
       <div
-        className={`flex items-end gap-2 max-w-[70%] ${
+        className={`flex items-start gap-2 max-w-[70%] ${
           isOwn ? "flex-row-reverse" : "flex-row"
         }`}
       >
@@ -611,6 +637,7 @@ export function MessageBubble({
                             onClick={() => {
                               handleDelete();
                               setShowMoreMenu(false);
+                              setShowActions(false);
                             }}
                           >
                             <Trash2 className="h-4 w-4" />
