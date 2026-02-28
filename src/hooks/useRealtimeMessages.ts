@@ -6,6 +6,21 @@ import { useChatStore } from "@/stores/useChatStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { MessageWithSender } from "@/types";
 
+// Shared reference to the reaction broadcast channel so MessageBubble can use it
+let reactionChannelRef: ReturnType<
+  ReturnType<typeof createClient>["channel"]
+> | null = null;
+
+export function broadcastReactionUpdate(messageId: string) {
+  if (reactionChannelRef) {
+    reactionChannelRef.send({
+      type: "broadcast",
+      event: "reaction_update",
+      payload: { message_id: messageId },
+    });
+  }
+}
+
 export function useRealtimeMessages(conversationId: string | null) {
   const addMessage = useChatStore((state) => state.addMessage);
   const updateMessage = useChatStore((state) => state.updateMessage);
@@ -87,8 +102,36 @@ export function useRealtimeMessages(conversationId: string | null) {
       )
       .subscribe();
 
+    // Broadcast channel for reaction sync (works without table-level Realtime)
+    const reactionChannel = supabase
+      .channel(`reaction-sync:${conversationId}`)
+      .on(
+        "broadcast",
+        { event: "reaction_update" },
+        async (payload: { payload: { message_id: string } }) => {
+          const messageId = payload.payload?.message_id;
+          if (!messageId) return;
+
+          // Fetch updated reactions for this message
+          const { data: reactions } = await supabase
+            .from("message_reactions")
+            .select("id, message_id, user_id, reaction, created_at")
+            .eq("message_id", messageId);
+
+          if (reactions) {
+            updateMessage(messageId, { reactions });
+          }
+        }
+      )
+      .subscribe();
+
+    // Store reference so broadcastReactionUpdate can use it
+    reactionChannelRef = reactionChannel;
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(reactionChannel);
+      reactionChannelRef = null;
     };
     // addMessage and updateMessage are stable zustand selectors
   }, [conversationId, addMessage, updateMessage]);

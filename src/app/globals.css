@@ -521,6 +521,62 @@
   background: hsl(var(--destructive) / 0.1);
 }
 
+/* ===== Reaction Badges ===== */
+.msg-reaction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  animation: reactionBadgeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.msg-reaction-badge:hover {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--muted-foreground) / 0.3);
+  transform: scale(1.05);
+}
+
+.msg-reaction-badge.own {
+  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.12);
+}
+
+.msg-reaction-badge.own:hover {
+  background: hsl(var(--primary) / 0.2);
+  border-color: hsl(var(--primary) / 0.6);
+}
+
+.msg-reaction-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.msg-reaction-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  line-height: 1;
+}
+
+.msg-reaction-badge.own .msg-reaction-count {
+  color: hsl(var(--primary));
+}
+
+@keyframes reactionBadgeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 /* Animated emoji styles */
 .animated-emoji-pop {

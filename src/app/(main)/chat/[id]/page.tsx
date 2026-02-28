@@ -364,7 +364,7 @@ export default function ConversationPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1 pb-6">
               {messages.map((message, index) => (
                 <div key={message.id}>
                   {/* Unread messages divider */}
@@ -390,6 +390,7 @@ export default function ConversationPage() {
                       index === 0 ||
                       messages[index - 1]?.sender_id !== message.sender_id
                     }
+                    members={activeConversation?.members}
                   />
                 </div>
               ))}

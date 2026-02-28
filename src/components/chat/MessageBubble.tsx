@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useChatStore } from "@/stores/useChatStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { broadcastReactionUpdate } from "@/hooks/useRealtimeMessages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AnimatedEmoji } from "@/components/chat/AnimatedEmoji";
 import { getInitials, formatTime, formatFileSize } from "@/lib/utils";
@@ -18,7 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import type { MessageWithSender } from "@/types";
+import type { MessageWithSender, ConversationMember, Profile } from "@/types";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -31,14 +33,17 @@ interface MessageBubbleProps {
   message: MessageWithSender;
   isOwn: boolean;
   showAvatar: boolean;
+  members?: (ConversationMember & { profile: Profile })[];
 }
 
 export function MessageBubble({
   message,
   isOwn,
   showAvatar,
+  members,
 }: MessageBubbleProps) {
-  const { setReplyingTo } = useChatStore();
+  const { setReplyingTo, updateMessage } = useChatStore();
+  const { user } = useAuthStore();
   const [showActions, setShowActions] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -93,15 +98,62 @@ export function MessageBubble({
     return getEmojiInfo(message.content);
   }, [message.content, message.message_type]);
 
+  // Helper to get reactor names from member list
+  const getReactorNames = (userIds: string[]) => {
+    return userIds
+      .map((uid) => {
+        if (uid === user?.id) return "You";
+        const member = members?.find((m) => m.user_id === uid);
+        return member
+          ? `${member.profile.first_name} ${member.profile.last_name}`
+          : "Someone";
+      })
+      .join(", ");
+  };
+
   const handleReaction = async (reaction: string) => {
+    if (!user) return;
+
+    // Optimistic update
+    const currentReactions = message.reactions || [];
+    const existingIdx = currentReactions.findIndex(
+      (r) => r.user_id === user.id && r.reaction === reaction
+    );
+
+    let optimisticReactions: typeof currentReactions;
+    if (existingIdx >= 0) {
+      // Remove reaction (toggle off)
+      optimisticReactions = currentReactions.filter((_, i) => i !== existingIdx);
+    } else {
+      // Add reaction
+      optimisticReactions = [
+        ...currentReactions,
+        {
+          id: `temp-${Date.now()}`,
+          message_id: message.id,
+          user_id: user.id,
+          reaction,
+          created_at: new Date().toISOString(),
+        },
+      ];
+    }
+
+    // Update store immediately
+    updateMessage(message.id, { reactions: optimisticReactions });
+
     try {
-      await fetch(`/api/messages/${message.id}/reactions`, {
+      const res = await fetch(`/api/messages/${message.id}/reactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reaction }),
       });
+      if (!res.ok) throw new Error("API error");
+      // Broadcast to other users so they see the reaction in real-time
+      broadcastReactionUpdate(message.id);
     } catch (error) {
-      console.error("Failed to add reaction:", error);
+      console.error("Failed to toggle reaction:", error);
+      // Rollback on failure
+      updateMessage(message.id, { reactions: currentReactions });
     }
   };
 
@@ -378,18 +430,29 @@ export function MessageBubble({
                 {Object.entries(
                   message.reactions.reduce(
                     (acc, r) => {
-                      acc[r.reaction] = (acc[r.reaction] || 0) + 1;
+                      if (!acc[r.reaction]) {
+                        acc[r.reaction] = { count: 0, hasOwn: false, userIds: [] as string[] };
+                      }
+                      acc[r.reaction].count += 1;
+                      acc[r.reaction].userIds.push(r.user_id);
+                      if (r.user_id === user?.id) {
+                        acc[r.reaction].hasOwn = true;
+                      }
                       return acc;
                     },
-                    {} as Record<string, number>
+                    {} as Record<string, { count: number; hasOwn: boolean; userIds: string[] }>
                   )
-                ).map(([reaction, count]) => (
+                ).map(([reaction, { count, hasOwn, userIds }]) => (
                   <button
                     key={reaction}
                     onClick={() => handleReaction(reaction)}
-                    className="bg-muted/80 hover:bg-muted rounded-full px-2 py-0.5 text-xs flex items-center gap-1 transition-colors"
+                    className={`msg-reaction-badge ${
+                      hasOwn ? "own" : ""
+                    }`}
+                    title={getReactorNames(userIds)}
                   >
-                    {reaction} {count > 1 && count}
+                    <span className="msg-reaction-emoji">{reaction}</span>
+                    {count > 1 && <span className="msg-reaction-count">{count}</span>}
                   </button>
                 ))}
               </div>
