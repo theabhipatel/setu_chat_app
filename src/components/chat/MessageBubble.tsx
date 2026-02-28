@@ -114,7 +114,7 @@ export function MessageBubble({
       onMouseLeave={() => setShowActions(false)}
     >
       <div
-        className={`flex items-end gap-2 max-w-[70%] overflow-hidden ${
+        className={`flex items-end gap-2 max-w-[70%] ${
           isOwn ? "flex-row-reverse" : "flex-row"
         }`}
       >
