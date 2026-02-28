@@ -114,7 +114,7 @@ export function MessageBubble({
       onMouseLeave={() => setShowActions(false)}
     >
       <div
-        className={`flex items-end gap-2 max-w-[70%] ${
+        className={`flex items-end gap-2 max-w-[70%] overflow-hidden ${
           isOwn ? "flex-row-reverse" : "flex-row"
         }`}
       >
@@ -138,7 +138,7 @@ export function MessageBubble({
           <div className="w-7" />
         ) : null}
 
-        <div className={`space-y-1 ${isOwn ? "items-end" : "items-start"}`}>
+        <div className={`space-y-1 min-w-0 ${isOwn ? "items-end" : "items-start"}`}>
           {/* Sender name */}
           {!isOwn && showAvatar && (
             <p className="text-xs text-muted-foreground font-medium px-1">
@@ -159,6 +159,7 @@ export function MessageBubble({
                         : "bg-muted text-foreground rounded-bl-md"
                     }`
               }`}
+              style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
             >
               {/* Reply indicator — INSIDE the bubble */}
               {message.reply_message && (
