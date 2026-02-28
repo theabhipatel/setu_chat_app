@@ -2,18 +2,20 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/useChatStore";
-import { Button } from "@/components/ui/button";
 import {
   Send,
   Paperclip,
   Smile,
   X,
+  Loader2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
-  loading: () => <div className="h-[350px] w-[350px] bg-muted rounded-lg animate-pulse" />,
+  loading: () => (
+    <div className="h-[350px] w-[350px] bg-muted rounded-lg animate-pulse" />
+  ),
 });
 
 interface MessageInputProps {
@@ -36,9 +38,12 @@ export function MessageInput({
   const [message, setMessage] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  const hasContent = message.trim().length > 0;
 
   // Auto-resize textarea
   useEffect(() => {
@@ -78,7 +83,6 @@ export function MessageInput({
       }
     };
 
-    // Delay adding listener to avoid the toggle click from immediately closing
     const timer = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
@@ -128,22 +132,17 @@ export function MessageInput({
 
       const data = await res.json();
       if (data.data) {
-        onSend(
-          isImage ? "" : file.name,
-          isImage ? "image" : "file",
-          {
-            url: data.data.url,
-            name: data.data.name,
-            size: data.data.size,
-          }
-        );
+        onSend(isImage ? "" : file.name, isImage ? "image" : "file", {
+          url: data.data.url,
+          name: data.data.name,
+          size: data.data.size,
+        });
       }
     } catch (error) {
       console.error("Upload failed:", error);
     }
     setUploading(false);
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -155,106 +154,108 @@ export function MessageInput({
   };
 
   return (
-    <div className="border-t border-border px-4 py-3 bg-background">
+    <div className="msg-input-wrapper">
       {/* Reply preview */}
       {replyingTo && (
-        <div className="flex items-center gap-2 mb-2 p-2.5 reply-input-preview">
-          <div className="flex-1 min-w-0 pl-2">
-            <p className="text-xs font-semibold" style={{ color: "#22d3ee" }}>
+        <div className="msg-input-reply-preview">
+          <div className="msg-input-reply-bar" />
+          <div className="flex-1 min-w-0">
+            <p className="msg-input-reply-name">
               Replying to {replyingTo.sender?.first_name}
             </p>
-            <p
-              className="text-xs text-muted-foreground mt-0.5 overflow-hidden"
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
+            <p className="msg-input-reply-text">
               {replyingTo.content || "Media"}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+          <button
+            className="msg-input-reply-close"
             onClick={() => setReplyingTo(null)}
+            aria-label="Cancel reply"
           >
             <X className="h-3.5 w-3.5" />
-          </Button>
+          </button>
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        {/* File upload */}
-        <div className="relative shrink-0">
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileUpload}
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.mp3,.mp4"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full h-10 w-10 text-muted-foreground hover:text-foreground"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
-        </div>
+      {/* Unified input container */}
+      <div className={`msg-input-container ${isFocused ? "focused" : ""}`}>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileUpload}
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.mp3,.mp4"
+        />
 
-        {/* Message input */}
-        <div className="flex-1 relative">
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              onTyping();
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="w-full resize-none rounded-2xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground min-h-[42px] max-h-[120px]"
-            rows={1}
-          />
-        </div>
-
-        {/* Emoji picker */}
-        <div className="relative shrink-0" ref={emojiPickerRef}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full h-10 w-10 text-muted-foreground hover:text-foreground"
-            onClick={() => setShowEmoji(!showEmoji)}
-          >
-            <Smile className="h-5 w-5" />
-          </Button>
-          {showEmoji && (
-            <div className="absolute bottom-12 right-0 z-50">
-              <EmojiPicker
-                onEmojiClick={handleEmojiClick}
-                // @ts-expect-error - theme type mismatch
-                theme="auto"
-                height={350}
-                width={350}
-                searchPlaceHolder="Search emoji..."
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Send button */}
-        <Button
-          size="icon"
-          className="rounded-full shrink-0 h-10 w-10"
-          onClick={handleSend}
-          disabled={!message.trim() || uploading}
+        {/* Attach button (left side) */}
+        <button
+          className="msg-input-action-btn attach-btn"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          aria-label="Attach file"
+          title="Attach file"
         >
-          <Send className="h-4 w-4" />
-        </Button>
+          {uploading ? (
+            <Loader2 className="h-[18px] w-[18px] animate-spin" />
+          ) : (
+            <Paperclip className="h-[18px] w-[18px]" />
+          )}
+        </button>
+
+        {/* Textarea */}
+        <textarea
+          ref={textareaRef}
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            onTyping();
+          }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="Type a message..."
+          className="msg-input-textarea"
+          rows={1}
+        />
+
+        {/* Right actions */}
+        <div className="msg-input-right-actions">
+          {/* Emoji picker */}
+          <div className="relative" ref={emojiPickerRef}>
+            <button
+              className={`msg-input-action-btn emoji-btn ${showEmoji ? "active" : ""}`}
+              onClick={() => setShowEmoji(!showEmoji)}
+              aria-label="Emoji"
+              title="Emoji"
+            >
+              <Smile className="h-[18px] w-[18px]" />
+            </button>
+            {showEmoji && (
+              <div className="msg-input-emoji-dropdown">
+                <EmojiPicker
+                  onEmojiClick={handleEmojiClick}
+                  // @ts-expect-error - theme type mismatch
+                  theme="auto"
+                  height={350}
+                  width={350}
+                  searchPlaceHolder="Search emoji..."
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Send button */}
+          <button
+            className={`msg-input-send-btn ${hasContent ? "active" : ""}`}
+            onClick={handleSend}
+            disabled={!hasContent || uploading}
+            aria-label="Send message"
+            title="Send message"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
