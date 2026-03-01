@@ -84,10 +84,13 @@ export function Sidebar() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => router.push("/chat")}
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <MessageSquare className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold gradient-text">Setu</h1>
-        </div>
+        </button>
         <div className="flex items-center gap-1">
           <ThemeToggle />
           <DropdownMenu>
