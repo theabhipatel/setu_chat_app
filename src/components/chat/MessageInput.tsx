@@ -202,7 +202,7 @@ export function MessageInput({
 
         {/* Attach button (left side) */}
         <button
-          className="msg-input-action-btn attach-btn"
+          className="msg-input-action-btn attach-btn group"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
           aria-label="Attach file"
