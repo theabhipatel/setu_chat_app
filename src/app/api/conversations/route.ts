@@ -40,6 +40,7 @@ export async function GET() {
     `
     )
     .in("id", conversationIds)
+    .or("is_deleted.is.null,is_deleted.eq.false")
     .order("last_message_at", { ascending: false });
 
   if (error) {
@@ -211,7 +212,7 @@ export async function POST(request: Request) {
     {
       conversation_id: conversation.id,
       user_id: user.id,
-      role: type === "group" ? "admin" : "member",
+      role: type === "group" ? "owner" : "member",
     },
     ...memberIds.map((memberId: string) => ({
       conversation_id: conversation.id,

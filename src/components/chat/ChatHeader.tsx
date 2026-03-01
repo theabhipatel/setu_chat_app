@@ -13,7 +13,6 @@ import {
   Video,
   MoreVertical,
   Users,
-  Settings,
   Bookmark,
 } from "lucide-react";
 import {
@@ -126,24 +125,25 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {isGroup && (
+            {isGroup ? (
               <DropdownMenuItem
                 onClick={() => router.push(`/chat/${conversation.id}/settings`)}
               >
-                <Settings className="mr-2 h-4 w-4" />
-                Group Settings
+                <Users className="mr-2 h-4 w-4" />
+                Group Info
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => {
-                if (!isGroup && otherMember?.user_id) {
-                  router.push(`/user/${otherMember.user_id}`);
-                }
-              }}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              {isGroup ? "View Members" : "View Profile"}
-            </DropdownMenuItem>
+            ) : !isSelf ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  if (otherMember?.user_id) {
+                    router.push(`/user/${otherMember.user_id}`);
+                  }
+                }}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                View Profile
+              </DropdownMenuItem>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

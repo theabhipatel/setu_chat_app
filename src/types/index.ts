@@ -25,6 +25,7 @@ export interface Conversation {
   description: string | null;
   avatar_url: string | null;
   created_by: string | null;
+  is_deleted: boolean;
   last_message_at: string;
   created_at: string;
   updated_at: string;
@@ -34,7 +35,7 @@ export interface ConversationMember {
   id: string;
   conversation_id: string;
   user_id: string;
-  role: "admin" | "member";
+  role: "owner" | "admin" | "member";
   joined_at: string;
 }
 

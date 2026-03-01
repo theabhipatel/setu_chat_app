@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastContainer } from "@/components/shared/ToastContainer";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -29,6 +30,7 @@ export default function RootLayout({
         >
           <TooltipProvider delayDuration={200}>
             {children}
+            <ToastContainer />
           </TooltipProvider>
         </ThemeProvider>
       </body>

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
+  const serviceClient = await createServiceClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -22,7 +23,8 @@ export async function POST(request: Request) {
   const fileExt = file.name.split(".").pop();
   const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-  const { data, error } = await supabase.storage
+  // Use service client to bypass storage RLS policies
+  const { data, error } = await serviceClient.storage
     .from(bucket)
     .upload(fileName, file, {
       cacheControl: "3600",
@@ -30,12 +32,13 @@ export async function POST(request: Request) {
     });
 
   if (error) {
+    console.error(`[Upload] Failed to upload to ${bucket}:`, error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(data.path);
+  } = serviceClient.storage.from(bucket).getPublicUrl(data.path);
 
   return NextResponse.json({
     data: {
