@@ -20,6 +20,7 @@ interface ChatState {
   messages: MessageWithSender[];
   typingUsers: TypingUser[];
   replyingTo: MessageWithSender | null;
+  forwardingMessage: MessageWithSender | null;
   isSidebarOpen: boolean;
 
   setConversations: (conversations: ConversationWithDetails[]) => void;
@@ -39,6 +40,7 @@ interface ChatState {
   addTypingUser: (user: TypingUser) => void;
   removeTypingUser: (userId: string) => void;
   setReplyingTo: (message: MessageWithSender | null) => void;
+  setForwardingMessage: (message: MessageWithSender | null) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   incrementUnreadCount: (conversationId: string) => void;
@@ -52,6 +54,7 @@ export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   typingUsers: [],
   replyingTo: null,
+  forwardingMessage: null,
   isSidebarOpen: true,
 
   setConversations: (conversations) =>
@@ -113,6 +116,7 @@ export const useChatStore = create<ChatState>((set) => ({
       typingUsers: state.typingUsers.filter((u) => u.user_id !== userId),
     })),
   setReplyingTo: (replyingTo) => set({ replyingTo }),
+  setForwardingMessage: (forwardingMessage) => set({ forwardingMessage }),
   toggleSidebar: () =>
     set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),

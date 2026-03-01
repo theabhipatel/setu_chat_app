@@ -12,6 +12,7 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { MessageListSkeleton } from "@/components/shared/LoadingSkeleton";
+import { ForwardMessageModal } from "@/components/chat/ForwardMessageModal";
 import type { MessageWithSender, ConversationWithDetails } from "@/types";
 import { Loader2, ChevronDown } from "lucide-react";
 
@@ -435,6 +436,9 @@ export default function ConversationPage() {
         onTyping={sendTyping}
         conversationId={conversationId}
       />
+
+      {/* Forward message modal */}
+      <ForwardMessageModal />
     </div>
   );
 }

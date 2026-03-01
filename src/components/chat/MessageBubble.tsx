@@ -42,7 +42,7 @@ export function MessageBubble({
   showAvatar,
   members,
 }: MessageBubbleProps) {
-  const { setReplyingTo, updateMessage } = useChatStore();
+  const { setReplyingTo, setForwardingMessage, updateMessage } = useChatStore();
   const { user } = useAuthStore();
   const [showActions, setShowActions] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -226,8 +226,9 @@ export function MessageBubble({
   };
 
   const handleForward = () => {
-    // TODO: open conversation selector modal
-    console.log("Forward message:", message.id);
+    setForwardingMessage(message);
+    setShowMoreMenu(false);
+    setShowActions(false);
   };
 
   if (message.message_type === "system") {
@@ -329,6 +330,14 @@ export function MessageBubble({
               }`}
               style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
             >
+              {/* Forwarded indicator */}
+              {message.forwarded_from && (
+                <div className={`fwd-indicator ${isOwn ? "own" : ""}`}>
+                  <Forward className="h-3 w-3" />
+                  <span>Forwarded</span>
+                </div>
+              )}
+
               {/* Reply indicator — INSIDE the bubble */}
               {message.reply_message && (
                 <div
@@ -625,7 +634,6 @@ export function MessageBubble({
                           className="msg-action-dropdown-item"
                           onClick={() => {
                             handleForward();
-                            setShowMoreMenu(false);
                           }}
                         >
                           <Forward className="h-4 w-4" />
