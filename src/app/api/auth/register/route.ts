@@ -67,6 +67,25 @@ export async function POST(request: Request) {
       })
       .eq("id", authData.user.id);
 
+    // Create "Saved Messages" self-conversation for the new user
+    const { data: selfConv } = await supabase
+      .from("conversations")
+      .insert({
+        type: "self",
+        name: "Saved Messages",
+        created_by: authData.user.id,
+      })
+      .select()
+      .single();
+
+    if (selfConv) {
+      await supabase.from("conversation_members").insert({
+        conversation_id: selfConv.id,
+        user_id: authData.user.id,
+        role: "admin",
+      });
+    }
+
     // Generate verification token
     const token = generateToken();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
