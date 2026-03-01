@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   MessageSquare,
@@ -17,8 +18,15 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user);
+    });
+  }, []);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -76,12 +84,20 @@ export default function Navbar() {
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             )}
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="font-semibold">Get Started</Button>
-            </Link>
+            {mounted && isLoggedIn ? (
+              <Link href="/chat">
+                <Button size="sm" className="font-semibold">Chat Now</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm" className="font-semibold">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -109,12 +125,20 @@ export default function Navbar() {
             </a>
           ))}
           <div className="flex gap-2 pt-2">
-            <Link href="/login" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full">Sign In</Button>
-            </Link>
-            <Link href="/register" className="flex-1">
-              <Button size="sm" className="w-full font-semibold">Get Started</Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/chat" className="flex-1">
+                <Button size="sm" className="w-full font-semibold">Chat Now</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Sign In</Button>
+                </Link>
+                <Link href="/register" className="flex-1">
+                  <Button size="sm" className="w-full font-semibold">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
