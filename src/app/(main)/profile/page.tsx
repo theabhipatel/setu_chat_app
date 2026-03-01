@@ -82,6 +82,7 @@ export default function ProfilePage() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("bucket", "profile-avatars");
+    formData.append("entityId", user?.id || "");
 
     try {
       const res = await fetch("/api/upload", {
