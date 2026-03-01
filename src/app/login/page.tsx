@@ -173,7 +173,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 {...register("email")}
-                className="h-11"
+                className="h-11 placeholder:text-muted-foreground/50"
               />
               {errors.email && (
                 <p className="text-xs text-destructive">
@@ -190,7 +190,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   {...register("password")}
-                  className="h-11 pr-10"
+                  className="h-11 pr-10 placeholder:text-muted-foreground/50"
                 />
                 <button
                   type="button"

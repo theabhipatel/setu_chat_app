@@ -150,7 +150,7 @@ export default function RegisterPage() {
                   id="firstName"
                   placeholder="Abhi"
                   {...register("firstName")}
-                  className="h-11"
+                  className="h-11 placeholder:text-muted-foreground/50"
                 />
                 {errors.firstName && (
                   <p className="text-xs text-destructive">
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                   id="lastName"
                   placeholder="Patel"
                   {...register("lastName")}
-                  className="h-11"
+                  className="h-11 placeholder:text-muted-foreground/50"
                 />
                 {errors.lastName && (
                   <p className="text-xs text-destructive">
@@ -180,7 +180,7 @@ export default function RegisterPage() {
                 id="username"
                 placeholder="theabhipatel"
                 {...register("username")}
-                className="h-11"
+                className="h-11 placeholder:text-muted-foreground/50"
               />
               {errors.username && (
                 <p className="text-xs text-destructive">
@@ -196,7 +196,7 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="you@example.com"
                 {...register("email")}
-                className="h-11"
+                className="h-11 placeholder:text-muted-foreground/50"
               />
               {errors.email && (
                 <p className="text-xs text-destructive">
@@ -213,7 +213,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a strong password"
                   {...register("password")}
-                  className="h-11 pr-10"
+                  className="h-11 pr-10 placeholder:text-muted-foreground/50"
                 />
                 <button
                   type="button"
