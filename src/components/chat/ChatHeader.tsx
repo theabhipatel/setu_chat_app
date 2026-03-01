@@ -13,6 +13,8 @@ import {
   Video,
   MoreVertical,
   Users,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,7 +31,33 @@ interface ChatHeaderProps {
 export function ChatHeader({ conversation }: ChatHeaderProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { setSidebarOpen } = useChatStore();
+  const { setSidebarOpen, updateConversation } = useChatStore();
+
+  // Check if this conversation is pinned by the current user
+  const currentMembership = conversation.members?.find(
+    (m) => m.user_id === user?.id
+  );
+  const isPinned = !!currentMembership?.pinned_at;
+
+  const handleTogglePin = async () => {
+    try {
+      const res = await fetch(`/api/conversations/${conversation.id}/pin`, {
+        method: "PATCH",
+      });
+      const data = await res.json();
+      if (res.ok && data.data) {
+        // Update the local conversation member's pinned_at
+        const updatedMembers = conversation.members?.map((m) =>
+          m.user_id === user?.id
+            ? { ...m, pinned_at: data.data.pinned_at }
+            : m
+        );
+        updateConversation(conversation.id, { members: updatedMembers });
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    }
+  };
 
   const isGroup = conversation.type === "group";
   const isSelf = conversation.type === "self";
@@ -143,6 +171,19 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
                 View Profile
               </DropdownMenuItem>
             ) : null}
+            <DropdownMenuItem onClick={handleTogglePin}>
+              {isPinned ? (
+                <>
+                  <PinOff className="mr-2 h-4 w-4" />
+                  Unpin Chat
+                </>
+              ) : (
+                <>
+                  <Pin className="mr-2 h-4 w-4" />
+                  Pin Chat
+                </>
+              )}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

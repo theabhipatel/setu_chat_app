@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { OnlineIndicator } from "@/components/shared/OnlineIndicator";
 import { ConversationListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { getInitials, formatDate, truncate } from "@/lib/utils";
-import { Users, Bookmark } from "lucide-react";
+import { Users, Bookmark, Pin } from "lucide-react";
 import type { ConversationWithDetails } from "@/types";
 
 export function ConversationList() {
@@ -72,93 +72,150 @@ export function ConversationList() {
     };
   };
 
-  // Sort: self conversations always on top
-  const sortedConversations = [...conversations].sort((a, b) => {
-    if (a.type === "self" && b.type !== "self") return -1;
-    if (a.type !== "self" && b.type === "self") return 1;
-    return 0;
-  });
+  // Helper to check if a conversation is pinned by the current user
+  const isPinned = (conv: ConversationWithDetails) => {
+    const membership = conv.members?.find((m) => m.user_id === user?.id);
+    return !!membership?.pinned_at;
+  };
 
-  return (
-    <div className="space-y-0.5 px-2">
-      {sortedConversations.map((conversation) => {
-        const info = getConversationInfo(conversation);
-        const isActive = pathname === `/chat/${conversation.id}`;
-        const lastMsg = conversation.last_message;
+  // Helper to get pinned_at timestamp
+  const getPinnedAt = (conv: ConversationWithDetails) => {
+    const membership = conv.members?.find((m) => m.user_id === user?.id);
+    return membership?.pinned_at || null;
+  };
 
-        return (
-          <button
-            key={conversation.id}
-            onClick={() => router.push(`/chat/${conversation.id}`)}
-            className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-all duration-150 hover:bg-accent/50 ${
-              isActive
-                ? "bg-accent shadow-sm"
-                : ""
-            }`}
-          >
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              <Avatar className="h-11 w-11">
-                <AvatarImage src={info.avatar || ""} alt={info.name} />
-                <AvatarFallback>
-                  {conversation.type === "group" ? (
-                    <Users className="h-5 w-5" />
-                  ) : (
-                    info.initials
-                  )}
-                </AvatarFallback>
-              </Avatar>
-              {conversation.type === "private" && (
-                <OnlineIndicator
-                  isOnline={info.isOnline}
-                  size="sm"
-                  className="absolute -bottom-0.5 -right-0.5"
-                />
+  // Split conversations into sections
+  const selfConversations = conversations.filter((c) => c.type === "self");
+  const pinnedConversations = conversations
+    .filter((c) => c.type !== "self" && isPinned(c))
+    .sort((a, b) => {
+      const aTime = getPinnedAt(a);
+      const bTime = getPinnedAt(b);
+      if (!aTime || !bTime) return 0;
+      return new Date(aTime).getTime() - new Date(bTime).getTime();
+    });
+  const recentConversations = conversations.filter(
+    (c) => c.type !== "self" && !isPinned(c)
+  );
+
+  const renderConversationItem = (conversation: ConversationWithDetails) => {
+    const info = getConversationInfo(conversation);
+    const isActive = pathname === `/chat/${conversation.id}`;
+    const lastMsg = conversation.last_message;
+
+    return (
+      <button
+        key={conversation.id}
+        onClick={() => router.push(`/chat/${conversation.id}`)}
+        className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-all duration-150 hover:bg-accent/50 ${
+          isActive
+            ? "bg-accent shadow-sm"
+            : ""
+        }`}
+      >
+        {/* Avatar */}
+        <div className="relative shrink-0">
+          <Avatar className="h-11 w-11">
+            <AvatarImage src={info.avatar || ""} alt={info.name} />
+            <AvatarFallback>
+              {conversation.type === "group" ? (
+                <Users className="h-5 w-5" />
+              ) : (
+                info.initials
+              )}
+            </AvatarFallback>
+          </Avatar>
+          {conversation.type === "private" && (
+            <OnlineIndicator
+              isOnline={info.isOnline}
+              size="sm"
+              className="absolute -bottom-0.5 -right-0.5"
+            />
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-medium text-sm truncate">
+                {info.name}
+              </span>
+              {info.subtitle && (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Bookmark className="h-3 w-3" />
+                  {info.subtitle}
+                </span>
               )}
             </div>
+            {lastMsg && (
+              <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                {formatDate(lastMsg.created_at)}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-0.5">
+            <p className="text-xs text-muted-foreground truncate">
+              {lastMsg?.is_deleted
+                ? "This message was deleted"
+                : lastMsg?.content
+                ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}${truncate(lastMsg.content, 36)}`
+                : lastMsg?.message_type === "image"
+                ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}📷 Image`
+                : lastMsg?.message_type === "file"
+                ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}📎 File`
+                : conversation.type === "self" ? "Save messages here" : "Start a conversation"}
+            </p>
+            {(conversation.unread_count || 0) > 0 && (
+              <Badge className="ml-2 h-5 min-w-[20px] rounded-full text-xs px-1.5">
+                {conversation.unread_count}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </button>
+    );
+  };
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {info.name}
-                  </span>
-                  {info.subtitle && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Bookmark className="h-3 w-3" />
-                      {info.subtitle}
-                    </span>
-                  )}
-                </div>
-                {lastMsg && (
-                  <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                    {formatDate(lastMsg.created_at)}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between mt-0.5">
-                <p className="text-xs text-muted-foreground truncate">
-                  {lastMsg?.is_deleted
-                    ? "This message was deleted"
-                    : lastMsg?.content
-                    ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}${truncate(lastMsg.content, 36)}`
-                    : lastMsg?.message_type === "image"
-                    ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}📷 Image`
-                    : lastMsg?.message_type === "file"
-                    ? `${lastMsg.sender_id === user?.id && conversation.type !== "self" ? "You: " : ""}📎 File`
-                    : conversation.type === "self" ? "Save messages here" : "Start a conversation"}
-                </p>
-                {(conversation.unread_count || 0) > 0 && (
-                  <Badge className="ml-2 h-5 min-w-[20px] rounded-full text-xs px-1.5">
-                    {conversation.unread_count}
-                  </Badge>
-                )}
-              </div>
+  return (
+    <div className="px-2">
+      {/* Saved Messages — always on top */}
+      {selfConversations.length > 0 && (
+        <div className="space-y-0.5">
+          {selfConversations.map(renderConversationItem)}
+        </div>
+      )}
+
+      {/* Pinned Conversations */}
+      {pinnedConversations.length > 0 && (
+        <div className="mt-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5">
+            <Pin className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Pinned
+            </span>
+          </div>
+          <div className="space-y-0.5">
+            {pinnedConversations.map(renderConversationItem)}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Conversations */}
+      {recentConversations.length > 0 && (
+        <div className="mt-2">
+          {pinnedConversations.length > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Recent
+              </span>
             </div>
-          </button>
-        );
-      })}
+          )}
+          <div className="space-y-0.5">
+            {recentConversations.map(renderConversationItem)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

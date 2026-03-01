@@ -37,6 +37,7 @@ export interface ConversationMember {
   user_id: string;
   role: "owner" | "admin" | "member";
   joined_at: string;
+  pinned_at: string | null;
 }
 
 export interface Message {
