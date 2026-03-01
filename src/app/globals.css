@@ -793,6 +793,33 @@
   background-clip: text;
 }
 
+/* ===== Sidebar Resize Handle ===== */
+.sidebar-resize-handle {
+  cursor: col-resize;
+  z-index: 30;
+  position: relative;
+}
+
+/* Accent line — hidden by default, appears on hover/drag */
+.sidebar-resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  transform: translateX(-50%);
+  background: hsl(var(--primary) / 0.7);
+  transition: width 0.2s ease;
+  border-radius: 2px;
+}
+
+/* On hover / drag — accent line appears */
+.sidebar-resize-handle:hover::before,
+.sidebar-resize-handle.dragging::before {
+  width: 3px;
+}
+
 /* Message bubble animations */
 .message-enter {
   animation: messageSlideIn 0.3s ease-out;

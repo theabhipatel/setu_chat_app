@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -10,6 +10,10 @@ import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { Loader2 } from "lucide-react";
 import type { ConversationWithDetails } from "@/types";
+
+const SIDEBAR_MIN = 280;
+const SIDEBAR_MAX = 600;
+const SIDEBAR_DEFAULT = 384; // ~w-96
 
 export default function MainLayout({
   children,
@@ -21,6 +25,54 @@ export default function MainLayout({
   const { user, setUser, isLoading } = useAuthStore();
   const { setConversations, isSidebarOpen } = useChatStore();
   const [mounted, setMounted] = useState(false);
+
+  // Resizable sidebar state
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  // Handle mouse down on the resize handle
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      dragRef.current = { startX: e.clientX, startWidth: sidebarWidth };
+    },
+    [sidebarWidth]
+  );
+
+  // Handle mouse move for resizing
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      const delta = e.clientX - dragRef.current.startX;
+      const newWidth = Math.min(
+        SIDEBAR_MAX,
+        Math.max(SIDEBAR_MIN, dragRef.current.startWidth + delta)
+      );
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      dragRef.current = null;
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    // Prevent text selection while dragging
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [isDragging, sidebarWidth]);
 
   usePresence();
   useRealtimeConversations();
@@ -111,18 +163,31 @@ export default function MainLayout({
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
       <div
-        className={`${
-          isSidebarOpen ? "flex" : "hidden"
-        } ${
-          isConversationView ? "hidden md:flex" : "flex"
-        } w-full md:w-80 lg:w-96 flex-col border-r border-border bg-sidebar`}
+        className={`${isSidebarOpen ? "flex" : "hidden"} ${isConversationView ? "hidden md:flex" : "flex"} w-full md:w-auto flex-col border-r border-border bg-sidebar shrink-0`}
+        style={{ width: undefined }}
       >
-        <Sidebar />
+        <div className="flex flex-col h-full w-full md:hidden">
+          <Sidebar />
+        </div>
+        <div
+          className="hidden md:flex flex-col h-full"
+          style={{ width: sidebarWidth }}
+        >
+          <Sidebar />
+        </div>
       </div>
+
+      {/* Resize Handle — overlaps sidebar border, only on md+ screens */}
+      <div
+        className={`hidden md:flex shrink-0 relative
+          ${isDragging ? "sidebar-resize-handle dragging" : "sidebar-resize-handle"}`}
+        style={{ width: "6px", marginLeft: "-3px", marginRight: "-3px" }}
+        onMouseDown={handleMouseDown}
+      />
 
       {/* Main content */}
       <div
-        className={`flex-1 flex flex-col ${
+        className={`flex-1 flex flex-col min-w-0 ${
           !isConversationView ? "hidden md:flex" : "flex"
         }`}
       >
@@ -131,3 +196,4 @@ export default function MainLayout({
     </div>
   );
 }
+
