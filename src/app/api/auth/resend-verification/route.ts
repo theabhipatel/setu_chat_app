@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     // Generate new token
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await supabase.from("verification_tokens").insert({
       user_id: profile.id,
