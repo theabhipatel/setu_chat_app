@@ -13,7 +13,6 @@ import {
   Video,
   MoreVertical,
   Users,
-  Bookmark,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -47,10 +46,10 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
     ? `${otherProfile.first_name} ${otherProfile.last_name}`
     : "Unknown User";
 
-  const avatar = isSelf ? null : isGroup ? conversation.avatar_url : otherProfile?.avatar_url;
+  const avatar = isSelf ? (user?.avatar_url || null) : isGroup ? conversation.avatar_url : otherProfile?.avatar_url;
   const isOnline = isSelf ? false : otherProfile?.is_online || false;
   const initials = isSelf
-    ? "SM"
+    ? (user ? getInitials(user.first_name, user.last_name) : "SM")
     : isGroup
     ? (conversation.name || "GC").substring(0, 2).toUpperCase()
     : otherProfile
@@ -88,7 +87,7 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
           <Avatar className="h-10 w-10">
             <AvatarImage src={avatar || ""} alt={name} />
             <AvatarFallback>
-              {isSelf ? <Bookmark className="h-5 w-5 text-primary" /> : isGroup ? <Users className="h-5 w-5" /> : initials}
+              {isGroup ? <Users className="h-5 w-5" /> : initials}
             </AvatarFallback>
           </Avatar>
           {!isGroup && !isSelf && (

@@ -22,7 +22,6 @@ import {
   User,
   FileText,
   ImageIcon,
-  Bookmark,
 } from "lucide-react";
 import type {
   ConversationWithDetails,
@@ -372,8 +371,9 @@ export function ForwardMessageModal() {
                         }`}
                       >
                         <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarImage src={user?.avatar_url || ""} alt="Saved Messages" />
                           <AvatarFallback className="text-xs bg-primary/20">
-                            <Bookmark className="h-4 w-4 text-primary" />
+                            {user ? getInitials(user.first_name, user.last_name) : "SM"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="fwd-result-info">

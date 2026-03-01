@@ -34,9 +34,9 @@ export function ConversationList() {
       return {
         name: "You",
         subtitle: "Saved Messages",
-        avatar: null,
+        avatar: user?.avatar_url || null,
         isOnline: false,
-        initials: "SM",
+        initials: user ? getInitials(user.first_name, user.last_name) : "SM",
         isSelf: true,
       };
     }
@@ -101,9 +101,7 @@ export function ConversationList() {
               <Avatar className="h-11 w-11">
                 <AvatarImage src={info.avatar || ""} alt={info.name} />
                 <AvatarFallback>
-                  {info.isSelf ? (
-                    <Bookmark className="h-5 w-5 text-primary" />
-                  ) : conversation.type === "group" ? (
+                  {conversation.type === "group" ? (
                     <Users className="h-5 w-5" />
                   ) : (
                     info.initials
