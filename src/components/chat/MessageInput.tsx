@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/useChatStore";
+import { toast } from "@/stores/useToastStore";
+import { validateFile } from "@/lib/file-validation";
 import {
   Send,
   Paperclip,
@@ -117,12 +119,19 @@ export function MessageInput({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const validation = validateFile(file, "chatFile");
+    if (!validation.valid) {
+      toast.error(validation.error!);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("bucket", "chat-files");
 
     const isImage = file.type.startsWith("image/");
-    formData.append("bucket", isImage ? "chat-images" : "chat-files");
 
     try {
       const res = await fetch("/api/upload", {
@@ -137,9 +146,12 @@ export function MessageInput({
           name: data.data.name,
           size: data.data.size,
         });
+      } else {
+        toast.error(data.error || "Upload failed");
       }
     } catch (error) {
       console.error("Upload failed:", error);
+      toast.error("Upload failed. Please try again.");
     }
     setUploading(false);
 

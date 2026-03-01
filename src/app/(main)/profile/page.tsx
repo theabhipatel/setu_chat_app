@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "@/stores/useToastStore";
+import { validateFile } from "@/lib/file-validation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,9 +71,9 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1MB limit
-    if (file.size > 1 * 1024 * 1024) {
-      toast.error("Image must be less than 1 MB");
+    const validation = validateFile(file, "avatar");
+    if (!validation.valid) {
+      toast.error(validation.error!);
       e.target.value = "";
       return;
     }
