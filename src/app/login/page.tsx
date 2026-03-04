@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginInput } from "@/lib/validations";
+import { isTauri, openInBrowser } from "@/lib/tauri";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isWaitingForBrowser, setIsWaitingForBrowser] = useState(false);
 
   const {
     register,
@@ -97,16 +99,58 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
 
-    if (error) {
-      setError(error.message);
+    if (isTauri()) {
+      // --- Tauri Desktop: Open system browser for OAuth ---
+      try {
+        // Use the deployed URL for the desktop callback so it works everywhere
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectTo = `${appUrl}/auth/desktop-callback`;
+
+        // Get the OAuth URL from Supabase without auto-redirecting
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo,
+            skipBrowserRedirect: true, // Don't redirect inside the webview
+          },
+        });
+
+        if (error) {
+          setError(error.message);
+          setIsGoogleLoading(false);
+          return;
+        }
+
+        if (data?.url) {
+          // Open the OAuth URL in the system's default browser
+          await openInBrowser(data.url);
+          setIsWaitingForBrowser(true);
+          // Auto-reset after 2 minutes if no response
+          setTimeout(() => {
+            setIsGoogleLoading(false);
+            setIsWaitingForBrowser(false);
+          }, 120000);
+          return;
+        }
+      } catch (err) {
+        console.error("[Login] Tauri OAuth error:", err);
+        setError("Failed to open browser for authentication.");
+      }
       setIsGoogleLoading(false);
+    } else {
+      // --- Web: Standard OAuth redirect ---
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setIsGoogleLoading(false);
+      }
     }
   };
 
@@ -264,8 +308,26 @@ export default function LoginPage() {
                 />
               </svg>
             )}
-            Continue with Google
+            {isWaitingForBrowser ? "Waiting for browser..." : "Continue with Google"}
           </Button>
+
+          {isWaitingForBrowser && (
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Complete sign-in in your browser. This window will update automatically.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGoogleLoading(false);
+                  setIsWaitingForBrowser(false);
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
 
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}

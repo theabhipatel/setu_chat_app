@@ -11,6 +11,9 @@
     "notification:allow-is-permission-granted",
     "notification:allow-request-permission",
     "notification:allow-notify",
-    "notification:allow-show"
+    "notification:allow-show",
+    "deep-link:default",
+    "deep-link:allow-get-current",
+    "shell:allow-open"
   ]
 }

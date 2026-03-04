@@ -18,12 +18,14 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isTauri, openInBrowser } from "@/lib/tauri";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isWaitingForBrowser, setIsWaitingForBrowser] = useState(false);
 
   const {
     register,
@@ -58,16 +60,54 @@ export default function RegisterPage() {
   const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
 
-    if (error) {
-      setError(error.message);
+    if (isTauri()) {
+      // --- Tauri Desktop: Open system browser for OAuth ---
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const redirectTo = `${appUrl}/auth/desktop-callback`;
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo,
+            skipBrowserRedirect: true,
+          },
+        });
+
+        if (error) {
+          setError(error.message);
+          setIsGoogleLoading(false);
+          return;
+        }
+
+        if (data?.url) {
+          await openInBrowser(data.url);
+          setIsWaitingForBrowser(true);
+          setTimeout(() => {
+            setIsGoogleLoading(false);
+            setIsWaitingForBrowser(false);
+          }, 120000);
+          return;
+        }
+      } catch (err) {
+        console.error("[Register] Tauri OAuth error:", err);
+        setError("Failed to open browser for authentication.");
+      }
       setIsGoogleLoading(false);
+    } else {
+      // --- Web: Standard OAuth redirect ---
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setIsGoogleLoading(false);
+      }
     }
   };
 
@@ -290,8 +330,26 @@ export default function RegisterPage() {
                 />
               </svg>
             )}
-            Continue with Google
+            {isWaitingForBrowser ? "Waiting for browser..." : "Continue with Google"}
           </Button>
+
+          {isWaitingForBrowser && (
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Complete sign-in in your browser. This window will update automatically.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGoogleLoading(false);
+                  setIsWaitingForBrowser(false);
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastContainer } from "@/components/shared/ToastContainer";
+import TauriDeepLinkHandler from "@/components/auth/TauriDeepLinkHandler";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,6 +32,7 @@ export default function RootLayout({
           <TooltipProvider delayDuration={200}>
             {children}
             <ToastContainer />
+            <TauriDeepLinkHandler />
           </TooltipProvider>
         </ThemeProvider>
       </body>

@@ -28,6 +28,16 @@
       "csp": null
     }
   },
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": [
+          "setu"
+        ]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
