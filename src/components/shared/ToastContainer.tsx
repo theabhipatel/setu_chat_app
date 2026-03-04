@@ -15,10 +15,10 @@ export function ToastContainer() {
           key={t.id}
           className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border backdrop-blur-md animate-in slide-in-from-right-5 fade-in duration-300 ${
             t.type === "success"
-              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+              ? "bg-emerald-500/35 border-emerald-500/50 text-emerald-400"
               : t.type === "error"
-              ? "bg-destructive/15 border-destructive/30 text-destructive"
-              : "bg-primary/15 border-primary/30 text-primary"
+              ? "bg-destructive/35 border-destructive/50 text-destructive"
+              : "bg-primary/35 border-primary/50 text-primary"
           }`}
         >
           {t.type === "success" && <CheckCircle2 className="h-5 w-5 shrink-0" />}
