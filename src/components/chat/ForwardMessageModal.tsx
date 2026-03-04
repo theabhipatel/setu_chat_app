@@ -267,7 +267,7 @@ export function ForwardMessageModal() {
     if (!forwardingMessage) return "";
     if (forwardingMessage.message_type === "image") return "📷 Photo";
     if (forwardingMessage.message_type === "file")
-      return `📎 ${forwardingMessage.file_name || "File"}`;
+      return `📎 ${forwardingMessage.files?.[0]?.file_name || "File"}`;
     return forwardingMessage.content || "";
   };
 
