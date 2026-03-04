@@ -48,7 +48,15 @@ export async function updateSession(request: NextRequest) {
   try {
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
+
+    // If there's an error (network failure, DNS error, etc.),
+    // allow the request through — don't redirect to login.
+    // The client-side will handle the offline state gracefully.
+    if (error) {
+      return response;
+    }
 
     const isAuthPage =
       request.nextUrl.pathname.startsWith("/login") ||
@@ -67,8 +75,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   } catch {
-    // Network error (e.g. no internet) — allow the request through.
-    // The client-side auth will handle the offline state gracefully.
+    // Unexpected error — allow the request through.
   }
 
   return response;

@@ -86,7 +86,18 @@ export default function MainLayout({
       try {
         const {
           data: { user: authUser },
+          error,
         } = await supabase.auth.getUser();
+
+        // Network error (offline) — don't redirect, keep existing session
+        if (error) {
+          const existingUser = useAuthStore.getState().user;
+          if (!existingUser) {
+            setUser(null);
+            router.push("/login");
+          }
+          return;
+        }
 
         if (!authUser) {
           setUser(null);
@@ -114,7 +125,6 @@ export default function MainLayout({
       } catch (error) {
         console.error("Failed to get user:", error);
         // Only redirect to login if we DON'T already have a user in the store.
-        // If we do, it's likely a network error (offline) — keep the current session.
         const existingUser = useAuthStore.getState().user;
         if (!existingUser) {
           setUser(null);

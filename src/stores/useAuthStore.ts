@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Profile } from "@/types";
 
 interface AuthState {
@@ -9,13 +10,22 @@ interface AuthState {
   updateUser: (updates: Partial<Profile>) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  isLoading: true,
-  setUser: (user) => set({ user, isLoading: false }),
-  setLoading: (isLoading) => set({ isLoading }),
-  updateUser: (updates) =>
-    set((state) => ({
-      user: state.user ? { ...state.user, ...updates } : null,
-    })),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isLoading: true,
+      setUser: (user) => set({ user, isLoading: false }),
+      setLoading: (isLoading) => set({ isLoading }),
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
+    }),
+    {
+      name: "setu-auth",
+      // Only persist the user field, not transient state like isLoading
+      partialize: (state) => ({ user: state.user }),
+    }
+  )
+);
