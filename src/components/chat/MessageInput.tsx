@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { toast } from "@/stores/useToastStore";
 import { validateFile, getFileCategory } from "@/lib/file-validation";
+import { getDraft, saveDraft, clearDraft } from "@/lib/draft-messages";
 import { AttachmentMenu } from "@/components/chat/AttachmentMenu";
 import { FilePreviewBar } from "@/components/chat/FilePreviewBar";
 import {
@@ -32,8 +33,7 @@ interface MessageInputProps {
 export function MessageInput({
   onSend,
   onTyping,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  conversationId: _conversationId,
+  conversationId,
 }: MessageInputProps) {
   const { replyingTo, setReplyingTo } = useChatStore();
   const [message, setMessage] = useState("");
@@ -45,6 +45,67 @@ export function MessageInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const messageRef = useRef(message);
+  const isLoadingDraftRef = useRef(false);
+  const prevConversationIdRef = useRef(conversationId);
+
+  // Keep messageRef in sync for use in cleanup functions
+  useEffect(() => {
+    messageRef.current = message;
+  }, [message]);
+
+  // Save draft for OLD conversation and load draft for NEW conversation
+  useEffect(() => {
+    // Save old conversation's draft immediately before switching
+    if (prevConversationIdRef.current !== conversationId) {
+      saveDraft(prevConversationIdRef.current, messageRef.current);
+      prevConversationIdRef.current = conversationId;
+    }
+
+    // Load draft for the new conversation
+    isLoadingDraftRef.current = true;
+    const draft = getDraft(conversationId);
+    setMessage(draft);
+
+    // Allow debounce saves after a tick (once message state has settled)
+    requestAnimationFrame(() => {
+      isLoadingDraftRef.current = false;
+    });
+  }, [conversationId]);
+
+  // Debounced save to localStorage (1 second)
+  useEffect(() => {
+    // Skip saving during conversation switch to avoid overwriting the new draft
+    if (isLoadingDraftRef.current) return;
+
+    if (draftTimerRef.current) {
+      clearTimeout(draftTimerRef.current);
+    }
+
+    draftTimerRef.current = setTimeout(() => {
+      saveDraft(conversationId, message);
+    }, 1000);
+
+    return () => {
+      if (draftTimerRef.current) {
+        clearTimeout(draftTimerRef.current);
+      }
+    };
+  }, [message, conversationId]);
+
+  // Save draft immediately on tab close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveDraft(conversationId, messageRef.current);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [conversationId]);
 
   const hasContent = message.trim().length > 0 || stagedFiles.length > 0;
 
@@ -311,6 +372,7 @@ export function MessageInput({
 
     // Cleanup
     setMessage("");
+    clearDraft(conversationId);
     stagedFiles.forEach((f) => {
       if (f.preview) URL.revokeObjectURL(f.preview);
     });
@@ -320,7 +382,7 @@ export function MessageInput({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
-  }, [message, stagedFiles, onSend, setReplyingTo]);
+  }, [message, stagedFiles, onSend, setReplyingTo, conversationId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
