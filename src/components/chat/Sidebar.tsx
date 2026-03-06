@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { clearSessionToken, getCurrentSessionId } from "@/lib/session-manager";
 import { useChatStore } from "@/stores/useChatStore";
 import { UserSearch } from "@/components/search/UserSearch";
 import { ConversationList } from "@/components/chat/ConversationList";
@@ -36,6 +37,22 @@ export function Sidebar() {
 
   const handleSignOut = async () => {
     const supabase = createClient();
+
+    // Delete the current session record so it doesn't show on other devices
+    const currentSessionId = getCurrentSessionId();
+    if (currentSessionId) {
+      try {
+        await fetch(`/api/sessions/${currentSessionId}`, {
+          method: "DELETE",
+        });
+      } catch {
+        // Best-effort cleanup
+      }
+    }
+
+    // Clear session token from localStorage
+    clearSessionToken();
+
     await supabase
       .from("profiles")
       .update({ is_online: false, last_seen: new Date().toISOString() })
