@@ -38,21 +38,23 @@ function detectBrowser(ua: string): string {
 // --- OS Detection (UA string fallback for Firefox/Safari) ---
 function detectOSFromUA(ua: string): string {
   // Android MUST come before Linux (Android UA contains "Linux")
-  if (/Android (\d+)/i.test(ua)) return `Android ${RegExp.$1}`;
-  if (/Android/i.test(ua)) return "Android";
+  const androidMatch = ua.match(/Android\s*(\d+)/i);
+  if (androidMatch) return `Android ${androidMatch[1]}`;
 
   // iOS
-  if (/iPhone OS (\d+)/i.test(ua) || /iPad.*OS (\d+)/i.test(ua)) {
-    return `iOS ${RegExp.$1}`;
-  }
+  const iphoneMatch = ua.match(/iPhone\s+OS\s+(\d+)/i);
+  if (iphoneMatch) return `iOS ${iphoneMatch[1]}`;
+  const ipadMatch = ua.match(/iPad.*OS\s+(\d+)/i);
+  if (ipadMatch) return `iOS ${ipadMatch[1]}`;
   if (/iPhone|iPad|iPod/i.test(ua)) return "iOS";
 
   // Windows
   if (/Windows/i.test(ua)) return "Windows";
 
   // macOS
-  if (/Mac OS X (\d+)[_.](\d+)/i.test(ua)) {
-    const major = parseInt(RegExp.$1);
+  const macMatch = ua.match(/Mac\s+OS\s+X\s+(\d+)[_.](\d+)/i);
+  if (macMatch) {
+    const major = parseInt(macMatch[1]);
     const versionMap: Record<string, string> = {
       "15": "Sequoia",
       "14": "Sonoma",
@@ -65,7 +67,7 @@ function detectOSFromUA(ua: string): string {
   }
   if (/Macintosh|Mac OS/i.test(ua)) return "macOS";
 
-  // Linux distros
+  // Linux distros (AFTER Android check so Android doesn't fall here)
   if (/Ubuntu/i.test(ua)) return "Ubuntu";
   if (/Fedora/i.test(ua)) return "Fedora";
   if (/CrOS/i.test(ua)) return "Chrome OS";

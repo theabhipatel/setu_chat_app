@@ -17,6 +17,7 @@ import {
 import { getDeviceInfo } from "@/lib/device-info";
 import {
   getOrCreateSessionToken,
+  getCurrentSessionId,
   setCurrentSessionId,
   clearSessionToken,
 } from "@/lib/session-manager";
@@ -99,15 +100,19 @@ export default function MainLayout({
   useRealtimeSessions({
     onNewLogin: addNewLogin,
     onSessionRevoked: useCallback(() => {
-      // Our session was revoked from another device — sign out
-      const signOut = async () => {
+      // Our session was revoked from another device — sign out locally only
+      // IMPORTANT: scope must be 'local' so we only clear THIS device's tokens.
+      // Default scope is 'global' which would invalidate ALL devices' refresh tokens,
+      // including the device that initiated the revocation.
+      console.log("[Layout] onSessionRevoked triggered — signing out (local scope)");
+      const doSignOut = async () => {
         const supabase = createClient();
         clearSessionToken();
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: "local" });
         setUser(null);
         router.push("/login");
       };
-      signOut();
+      doSignOut();
     }, [router, setUser]),
   });
 
@@ -160,6 +165,7 @@ export default function MainLayout({
         try {
           const deviceInfo = await getDeviceInfo();
           const sessionToken = getOrCreateSessionToken();
+          const previousSessionId = getCurrentSessionId();
           const trackRes = await fetch("/api/sessions/track", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -172,7 +178,17 @@ export default function MainLayout({
             }),
           });
           const trackData = await trackRes.json();
+
           if (trackData.data?.id) {
+            // If we had a stored session that no longer exists (was revoked),
+            // and the server created a brand new one → session was revoked, sign out
+            if (previousSessionId && trackData.new_device_detected) {
+              clearSessionToken();
+              await supabase.auth.signOut({ scope: "local" });
+              setUser(null);
+              router.push("/login");
+              return;
+            }
             setCurrentSessionId(trackData.data.id);
           }
         } catch (sessionError) {

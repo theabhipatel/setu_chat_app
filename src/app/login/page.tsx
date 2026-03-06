@@ -71,7 +71,7 @@ export default function LoginPage() {
         console.log("[Login] Profile:", profile);
 
         if (profile?.auth_provider === "email" && !profile.is_email_verified) {
-          await supabase.auth.signOut();
+          await supabase.auth.signOut({ scope: "local" });
           setError(
             "Please verify your email before logging in. Check your inbox."
           );

@@ -84,7 +84,7 @@ export default function SettingsPage() {
       .from("profiles")
       .update({ is_online: false, last_seen: new Date().toISOString() })
       .eq("id", user?.id);
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     setUser(null);
     router.push("/login");
   };

@@ -17,6 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getSessionToken } from "@/lib/session-manager";
+import {
+  markSessionAsRevoking,
+  markMultipleSessionsAsRevoking,
+  setSuppressSignOut,
+} from "@/hooks/useRealtimeSessions";
 import { useToastStore } from "@/stores/useToastStore";
 import type { UserSession } from "@/types";
 
@@ -113,6 +118,8 @@ export function ActiveSessions() {
   const handleRevokeSession = async (sessionId: string) => {
     setRevokingId(sessionId);
     setConfirmRevokeId(null);
+    // Mark this session ID as being revoked by us (prevents realtime sign-out)
+    markSessionAsRevoking(sessionId);
     try {
       const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "DELETE",
@@ -133,6 +140,11 @@ export function ActiveSessions() {
   const handleRevokeAll = async () => {
     setRevokingAll(true);
     setConfirmRevokeAll(false);
+    // Mark all other session IDs as being revoked by us
+    const otherSessions = sessions.filter((s) => !s.is_current);
+    markMultipleSessionsAsRevoking(otherSessions.map((s) => s.id));
+    // Also set global suppress flag as a safety net
+    setSuppressSignOut(true);
     try {
       const token = getSessionToken();
       const res = await fetch("/api/sessions", {
@@ -152,6 +164,8 @@ export function ActiveSessions() {
       addToast({ type: "error", message: "Failed to revoke sessions" });
     } finally {
       setRevokingAll(false);
+      // Reset global suppress after a generous delay for all DELETE events to arrive
+      setTimeout(() => setSuppressSignOut(false), 10_000);
     }
   };
 
