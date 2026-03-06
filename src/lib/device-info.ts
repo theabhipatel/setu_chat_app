@@ -2,6 +2,10 @@
  * Device Info Detection Utility
  * Uses User-Agent Client Hints API (Chrome 93+) as primary source,
  * falls back to UA string parsing for Firefox/Safari.
+ *
+ * IMPORTANT: Client Hints can sometimes report incorrect platform
+ * (e.g., "Linux" instead of "Android" on some mobile Chrome versions).
+ * We cross-validate with the UA string to catch these cases.
  */
 
 import { isTauri } from "@/lib/tauri";
@@ -33,6 +37,19 @@ function detectBrowser(ua: string): string {
   if (/Chromium/i.test(ua)) return "Chromium";
   if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return "Safari";
   return "Unknown Browser";
+}
+
+// --- UA-based helpers for cross-validation ---
+function uaIsAndroid(ua: string): boolean {
+  return /Android/i.test(ua);
+}
+
+function uaIsMobile(ua: string): boolean {
+  return /Mobile|iPhone|iPod|Android.*Mobile|webOS|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(ua);
+}
+
+function uaIsiOS(ua: string): boolean {
+  return /iPhone|iPad|iPod/i.test(ua);
 }
 
 // --- OS Detection (UA string fallback for Firefox/Safari) ---
@@ -91,6 +108,7 @@ function detectDeviceType(ua: string): DeviceInfo["deviceType"] {
 
 /**
  * Detect device type using Client Hints (more reliable than UA for mobile detection).
+ * Cross-validates with UA string to handle incorrect Client Hints values.
  */
 function detectDeviceTypeFromHints(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,11 +120,22 @@ function detectDeviceTypeFromHints(
   const platform = hints.platform || "";
   const mobile = hints.mobile ?? false;
 
-  if (platform === "Android" || platform === "iOS") {
+  // Cross-validate: if UA says Android/iOS but hints don't, trust UA
+  const isAndroidUA = uaIsAndroid(ua);
+  const isMobileUA = uaIsMobile(ua);
+  const isiOSUA = uaIsiOS(ua);
+
+  if (platform === "Android" || platform === "iOS" || isAndroidUA || isiOSUA) {
     // Check if tablet (no "Mobile" in UA on Android tablets)
-    if (/iPad/i.test(ua) || (platform === "Android" && !mobile)) {
+    if (/iPad/i.test(ua) || ((platform === "Android" || isAndroidUA) && !mobile && !isMobileUA)) {
       return "tablet_browser";
     }
+    return "mobile_browser";
+  }
+
+  // If Client Hints says mobile but platform doesn't match Android/iOS,
+  // still respect the mobile flag
+  if (mobile || isMobileUA) {
     return "mobile_browser";
   }
 
@@ -118,8 +147,10 @@ function detectDeviceTypeFromHints(
  *
  * Client Hints advantages:
  * - Correctly distinguishes Windows 10 vs 11 (UA string can't)
- * - Correctly identifies Android (UA string contains "Linux" which is misleading)
  * - Returns device model for mobile devices
+ *
+ * IMPORTANT: Client Hints can sometimes return "Linux" for Android devices.
+ * We cross-validate with the UA string to catch this.
  */
 async function detectOS(ua: string): Promise<{
   osName: string;
@@ -141,18 +172,43 @@ async function detectOS(ua: string): Promise<{
       const platform = hints.platform || "";
       const version = hints.platformVersion || "";
       const model = hints.model || "";
+      const mobile = hints.mobile ?? false;
+
+      // Cross-validate: if hints say "Linux" but UA says "Android", trust UA
+      const isAndroidUA = uaIsAndroid(ua);
+      const isiOSUA = uaIsiOS(ua);
+
+      let resolvedPlatform = platform;
+      if ((platform === "Linux" || platform === "") && isAndroidUA) {
+        resolvedPlatform = "Android";
+      }
+      if ((platform === "Linux" || platform === "") && isiOSUA) {
+        resolvedPlatform = "iOS";
+      }
+      // Also respect the mobile flag — if mobile is true and platform is Linux,
+      // it's almost certainly Android
+      if (platform === "Linux" && mobile) {
+        resolvedPlatform = "Android";
+      }
 
       let osName: string;
 
-      switch (platform) {
+      switch (resolvedPlatform) {
         case "Windows": {
           const major = parseInt(version.split(".")[0] || "0");
           osName = major >= 13 ? "Windows 11" : "Windows 10";
           break;
         }
         case "Android": {
-          const androidMajor = version.split(".")[0] || "";
-          osName = androidMajor ? `Android ${androidMajor}` : "Android";
+          // Try Client Hints version first, fallback to UA
+          if (platform === "Android" && version) {
+            const androidMajor = version.split(".")[0] || "";
+            osName = androidMajor ? `Android ${androidMajor}` : "Android";
+          } else {
+            // Client Hints didn't have Android info, use UA
+            const androidMatch = ua.match(/Android\s*(\d+)/i);
+            osName = androidMatch ? `Android ${androidMatch[1]}` : "Android";
+          }
           break;
         }
         case "macOS": {
@@ -170,10 +226,10 @@ async function detectOS(ua: string): Promise<{
           osName = "Linux";
           break;
         default:
-          osName = platform || detectOSFromUA(ua);
+          osName = resolvedPlatform || detectOSFromUA(ua);
       }
 
-      return { osName, model, hints };
+      return { osName, model, hints: { ...hints, platform: resolvedPlatform, mobile } };
     }
   } catch {
     // Client Hints not available
@@ -240,4 +296,3 @@ export function getDeviceTypeLabel(
   };
   return labels[deviceType] || "Unknown";
 }
-

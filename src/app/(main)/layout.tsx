@@ -102,9 +102,6 @@ export default function MainLayout({
     onSessionRevoked: useCallback(() => {
       // Our session was revoked from another device — sign out locally only
       // IMPORTANT: scope must be 'local' so we only clear THIS device's tokens.
-      // Default scope is 'global' which would invalidate ALL devices' refresh tokens,
-      // including the device that initiated the revocation.
-      console.log("[Layout] onSessionRevoked triggered — signing out (local scope)");
       const doSignOut = async () => {
         const supabase = createClient();
         clearSessionToken();
@@ -115,6 +112,7 @@ export default function MainLayout({
       doSignOut();
     }, [router, setUser]),
   });
+
 
   // Reusable app initialization (used for first load + retry)
   const initializeApp = useCallback(async () => {
