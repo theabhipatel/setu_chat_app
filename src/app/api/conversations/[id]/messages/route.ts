@@ -125,7 +125,7 @@ export async function GET(
     }
   }
 
-  // Update read receipt (marks everything as read)
+  // Update read receipt (marks everything as read AND delivered)
   if (messages && messages.length > 0) {
     await serviceClient.from("read_receipts").upsert(
       {
@@ -133,6 +133,7 @@ export async function GET(
         user_id: user.id,
         last_read_message_id: messages[0].id,
         last_read_at: new Date().toISOString(),
+        delivered_at: new Date().toISOString(),
       },
       {
         onConflict: "conversation_id,user_id",
@@ -143,7 +144,7 @@ export async function GET(
   // Fetch read receipts of OTHER users in this conversation (for status indicators)
   const { data: otherReadReceipts } = await serviceClient
     .from("read_receipts")
-    .select("user_id, last_read_at, last_read_message_id")
+    .select("user_id, last_read_at, last_read_message_id, delivered_at")
     .eq("conversation_id", params.id)
     .neq("user_id", user.id);
 

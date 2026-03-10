@@ -14,7 +14,7 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { MessageListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { ForwardMessageModal } from "@/components/chat/ForwardMessageModal";
 import { getFailedMessages, addFailedMessage, removeFailedMessage } from "@/lib/failed-messages";
-import type { MessageWithSender, ConversationWithDetails, UploadedFileData, OtherReadReceipt, MessageStatus } from "@/types";
+import type { MessageWithSender, ConversationWithDetails, UploadedFileData, OtherReadReceipt, MessageStatus, MessageReceiptDetail } from "@/types";
 import { Loader2, ChevronDown } from "lucide-react";
 
 export default function ConversationPage() {
@@ -81,6 +81,48 @@ export default function ConversationPage() {
     loadConversation();
   }, [conversationId, setActiveConversation, router]);
 
+  // Helper: compute per-user receipt details for a single own message
+  const computeReceiptDetails = useCallback(
+    (
+      msg: MessageWithSender,
+      receipts: OtherReadReceipt[],
+      otherMembers: { user_id: string; first_name: string; last_name: string }[]
+    ): MessageReceiptDetail[] => {
+      return otherMembers.map((member) => {
+        const receipt = receipts.find((r) => r.user_id === member.user_id);
+        let status: "sent" | "delivered" | "read" = "sent";
+        if (receipt) {
+          if (receipt.last_read_at && msg.created_at <= receipt.last_read_at) {
+            status = "read";
+          } else if (receipt.delivered_at && msg.created_at <= receipt.delivered_at) {
+            // User's browser received the message but they haven't opened the chat
+            status = "delivered";
+          }
+          // If neither read nor delivered → stays "sent"
+        }
+        return {
+          user_id: member.user_id,
+          first_name: member.first_name,
+          last_name: member.last_name,
+          status,
+        };
+      });
+    },
+    []
+  );
+
+  // Helper: compute aggregate status from per-user receipt details
+  const getAggregateStatus = useCallback(
+    (details: MessageReceiptDetail[]): MessageStatus => {
+      if (details.length === 0) return "sent";
+      if (details.every((d) => d.status === "read")) return "read";
+      if (details.every((d) => d.status === "read" || d.status === "delivered"))
+        return "delivered";
+      return "sent";
+    },
+    []
+  );
+
   // Load messages
   useEffect(() => {
     const loadMessages = async () => {
@@ -91,25 +133,36 @@ export default function ConversationPage() {
         );
         const data = await res.json();
         if (data.data) {
-          // Compute statuses from otherReadReceipts
           const receipts: OtherReadReceipt[] = data.otherReadReceipts || [];
-          const messagesWithStatus = (data.data as MessageWithSender[]).map((msg) => {
-            if (msg.sender_id !== user?.id) return msg; // Only show status for own messages
-            let status: MessageStatus = "sent";
-            // Check if any other user has read past this message
-            for (const receipt of receipts) {
-              if (receipt.last_read_at && msg.created_at <= receipt.last_read_at) {
-                status = "read";
-                break;
-              }
+          const conversation = useChatStore.getState().activeConversation;
+
+          // Build other members list for receipt details
+          const otherMembers = (conversation?.members || [])
+            .filter((m) => m.user_id !== user?.id)
+            .map((m) => ({
+              user_id: m.user_id,
+              first_name: m.profile.first_name,
+              last_name: m.profile.last_name,
+            }));
+
+          const isGroup = conversation?.type === "group";
+
+          const messagesWithStatus = (data.data as MessageWithSender[]).map(
+            (msg) => {
+              if (msg.sender_id !== user?.id) return msg;
+
+              // Compute per-user receipt details
+              const details = computeReceiptDetails(msg, receipts, otherMembers);
+              const aggregateStatus = getAggregateStatus(details);
+
+              return {
+                ...msg,
+                status: aggregateStatus,
+                // Only attach details for group chats (private shows simple tooltip)
+                receiptDetails: isGroup ? details : undefined,
+              };
             }
-            // If not read but receipts exist, mark as delivered
-            // (they have the conversation open / fetched messages before)
-            if (status !== "read" && receipts.length > 0) {
-              status = "delivered";
-            }
-            return { ...msg, status };
-          });
+          );
 
           // Merge in any failed messages from localStorage
           const savedFailed = getFailedMessages(conversationId);
@@ -137,7 +190,7 @@ export default function ConversationPage() {
       setMessages([]);
       setActiveConversation(null);
     };
-  }, [conversationId, setMessages, setActiveConversation]);
+  }, [conversationId, setMessages, setActiveConversation, computeReceiptDetails, getAggregateStatus]);
 
   // Smart scroll: scroll to unread divider or bottom after messages load
   useEffect(() => {
@@ -301,6 +354,19 @@ export default function ConversationPage() {
       messageType = firstFileType;
     }
 
+    // Build initial receipt details for group chats (all members start as "sent")
+    const isGroup = activeConversation?.type === "group";
+    const initialReceiptDetails = isGroup
+      ? (activeConversation?.members || [])
+          .filter((m) => m.user_id !== user.id)
+          .map((m) => ({
+            user_id: m.user_id,
+            first_name: m.profile.first_name,
+            last_name: m.profile.last_name,
+            status: "sent" as const,
+          }))
+      : undefined;
+
     // Optimistic update
     const optimisticMessage: MessageWithSender = {
       id: `temp-${Date.now()}`,
@@ -317,6 +383,7 @@ export default function ConversationPage() {
       sender: user,
       reply_message: currentReplyingTo || undefined,
       status: "sending" as MessageStatus,
+      receiptDetails: initialReceiptDetails,
       files: files?.map((f, i) => ({
         id: `temp-file-${i}`,
         message_id: `temp-${Date.now()}`,
@@ -365,6 +432,7 @@ export default function ConversationPage() {
             ...savedMessage,
             status: "sent",
             reply_message: optimisticMessage.reply_message,
+            receiptDetails: optimisticMessage.receiptDetails,
           });
           // In case this was a retry, remove from failed storage
           removeFailedMessage(conversationId, optimisticMessage.id);
@@ -419,6 +487,7 @@ export default function ConversationPage() {
             ...savedMessage,
             status: "sent",
             reply_message: failedMessage.reply_message,
+            receiptDetails: failedMessage.receiptDetails,
           });
           // Remove from localStorage on success
           removeFailedMessage(conversationId, failedMessage.id);

@@ -156,6 +156,27 @@ export function useRealtimeConversations() {
               !isActiveChat
             ) {
               incrementUnreadCount(newMessage.conversation_id);
+
+              // Mark as delivered — our browser received the message even though
+              // we're not viewing that conversation. Only sets delivered_at,
+              // does NOT set last_read_at (so it won't falsely show as "read").
+              const now = new Date().toISOString();
+              supabase
+                .from("read_receipts")
+                .update({ delivered_at: now })
+                .eq("conversation_id", newMessage.conversation_id)
+                .eq("user_id", currentUserId!)
+                .then(async ({ count }) => {
+                  // If no row was updated (user never opened this chat before),
+                  // insert a new delivery-only receipt
+                  if (count === 0) {
+                    await supabase.from("read_receipts").insert({
+                      conversation_id: newMessage.conversation_id,
+                      user_id: currentUserId!,
+                      delivered_at: now,
+                    });
+                  }
+                });
             }
 
             // Show browser notification if:

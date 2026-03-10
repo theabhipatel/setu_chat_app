@@ -111,6 +111,7 @@ export function useRealtimeMessages(conversationId: string | null) {
               playNotificationSound();
 
               // Since we're actively viewing this conversation, update our read receipt
+              // (reading implies delivery, so set both timestamps)
               supabase
                 .from("read_receipts")
                 .upsert(
@@ -119,6 +120,7 @@ export function useRealtimeMessages(conversationId: string | null) {
                     user_id: userIdRef.current!,
                     last_read_message_id: newMessage.id,
                     last_read_at: new Date().toISOString(),
+                    delivered_at: new Date().toISOString(),
                   },
                   { onConflict: "conversation_id,user_id" }
                 )
@@ -151,7 +153,7 @@ export function useRealtimeMessages(conversationId: string | null) {
       )
       .subscribe();
 
-    // ─── Read receipts listener: track when OTHER users read our messages ───
+    // ─── Read receipts listener: track when OTHER users read/receive our messages ───
     // This fires whenever any user in this conversation updates their read_receipt
     const readReceiptChannel = supabase
       .channel(`read-receipts:${conversationId}`)
@@ -167,25 +169,87 @@ export function useRealtimeMessages(conversationId: string | null) {
         (payload: any) => {
           const receipt = payload.new as {
             user_id: string;
-            last_read_at: string;
+            last_read_at: string | null;
+            delivered_at: string | null;
             conversation_id: string;
           };
           if (!receipt?.user_id) return;
           // Only care about OTHER users' receipts
           if (receipt.user_id === userIdRef.current) return;
 
-          // Mark all our messages created before their last_read_at as "read"
-          // Skip failed and temp messages — they were never actually sent
-          const messages = useChatStore.getState().messages;
+          const store = useChatStore.getState();
+          const messages = store.messages;
+          const conversation = store.activeConversation;
+          const isGroup = conversation?.type === "group";
+
+          // Get all other members (for group receipt computations)
+          const otherMembers = (conversation?.members || [])
+            .filter((m) => m.user_id !== userIdRef.current)
+            .map((m) => ({
+              user_id: m.user_id,
+              first_name: m.profile.first_name,
+              last_name: m.profile.last_name,
+            }));
+
           messages.forEach((msg) => {
             if (
-              msg.sender_id === userIdRef.current &&
-              msg.status !== "read" &&
-              msg.status !== "failed" &&
-              !msg.id.startsWith("temp-") &&
-              msg.created_at <= receipt.last_read_at
+              msg.sender_id !== userIdRef.current ||
+              msg.status === "failed" ||
+              msg.id.startsWith("temp-")
             ) {
-              updateMessage(msg.id, { status: "read" });
+              return;
+            }
+
+            if (isGroup) {
+              // ── GROUP CHAT ──
+              // Update the receipt detail for this specific user
+              const currentDetails = msg.receiptDetails || otherMembers.map((m) => ({
+                user_id: m.user_id,
+                first_name: m.first_name,
+                last_name: m.last_name,
+                status: "sent" as const,
+              }));
+
+              const updatedDetails = currentDetails.map((detail) => {
+                if (detail.user_id === receipt.user_id) {
+                  if (receipt.last_read_at && msg.created_at <= receipt.last_read_at) {
+                    return { ...detail, status: "read" as const };
+                  } else if (receipt.delivered_at && msg.created_at <= receipt.delivered_at) {
+                    return { ...detail, status: "delivered" as const };
+                  }
+                  // Neither read nor delivered for this message
+                  return detail;
+                }
+                return detail;
+              });
+
+              // Compute aggregate status
+              let aggregateStatus: "sent" | "delivered" | "read" = "sent";
+              if (updatedDetails.every((d) => d.status === "read")) {
+                aggregateStatus = "read";
+              } else if (
+                updatedDetails.every(
+                  (d) => d.status === "read" || d.status === "delivered"
+                )
+              ) {
+                aggregateStatus = "delivered";
+              }
+
+              updateMessage(msg.id, {
+                status: aggregateStatus,
+                receiptDetails: updatedDetails,
+              });
+            } else {
+              // ── PRIVATE CHAT ──
+              if (receipt.last_read_at && msg.created_at <= receipt.last_read_at) {
+                if (msg.status !== "read") {
+                  updateMessage(msg.id, { status: "read" });
+                }
+              } else if (receipt.delivered_at && msg.created_at <= receipt.delivered_at) {
+                if (msg.status !== "read" && msg.status !== "delivered") {
+                  updateMessage(msg.id, { status: "delivered" });
+                }
+              }
             }
           });
         }

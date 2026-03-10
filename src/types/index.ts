@@ -100,6 +100,14 @@ export interface VerificationToken {
   created_at: string;
 }
 
+// Per-user receipt detail (for group chat hover tooltip)
+export interface MessageReceiptDetail {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  status: "sent" | "delivered" | "read";
+}
+
 // Extended types for joined queries
 export interface MessageWithSender extends Message {
   sender: Profile;
@@ -108,6 +116,7 @@ export interface MessageWithSender extends Message {
   reactions?: MessageReaction[];
   files?: MessageFile[];
   status?: MessageStatus;
+  receiptDetails?: MessageReceiptDetail[];
 }
 
 // Read receipt info for the other user(s) — returned by the messages API
@@ -115,6 +124,7 @@ export interface OtherReadReceipt {
   user_id: string;
   last_read_at: string;
   last_read_message_id: string | null;
+  delivered_at: string | null;
 }
 
 export interface ConversationWithDetails extends Conversation {

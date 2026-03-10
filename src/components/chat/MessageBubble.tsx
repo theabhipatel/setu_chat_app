@@ -499,29 +499,21 @@ export function MessageBubble({
                   <span className="text-[10px] opacity-50">edited</span>
                 )}
                 {isOwn && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span
-                        onClick={(e) => {
-                          if (message.status === "failed" && onRetry) {
-                            e.stopPropagation();
-                            onRetry(message);
-                          }
-                        }}
-                        className={message.status === "failed" ? "cursor-pointer" : ""}
-                      >
-                        <MessageStatus
-                          status={message.status || (message.id.startsWith("temp-") ? "sending" : "sent")}
-                          isEmojiOnly={emojiInfo.isEmojiOnly && !message.reply_message && !hasMedia}
-                        />
-                      </span>
-                    </TooltipTrigger>
-                    {message.status === "failed" && (
-                      <TooltipContent side="top">
-                        <p>Click to retry</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
+                  <span
+                    onClick={(e) => {
+                      if (message.status === "failed" && onRetry) {
+                        e.stopPropagation();
+                        onRetry(message);
+                      }
+                    }}
+                    className={message.status === "failed" ? "cursor-pointer" : ""}
+                  >
+                    <MessageStatus
+                      status={message.status || (message.id.startsWith("temp-") ? "sending" : "sent")}
+                      isEmojiOnly={emojiInfo.isEmojiOnly && !message.reply_message && !hasMedia}
+                      receiptDetails={message.receiptDetails}
+                    />
+                  </span>
                 )}
               </div>
             </div>
