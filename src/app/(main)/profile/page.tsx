@@ -19,6 +19,8 @@ import {
   Calendar,
   Shield,
   CheckCircle2,
+  Pencil,
+  ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -31,6 +33,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState("");
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -214,9 +217,28 @@ export default function ProfilePage() {
 
           {/* Edit Profile */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-              Edit Profile
-            </h4>
+            <button
+              onClick={() => {
+                setShowEditForm(!showEditForm);
+                setMessage("");
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Pencil className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Edit Profile</p>
+                  <p className="text-xs text-muted-foreground">
+                    Update your name, username, and other details
+                  </p>
+                </div>
+              </div>
+              <ChevronRight
+                className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                  showEditForm ? "rotate-90" : ""
+                }`}
+              />
+            </button>
 
             {message && (
               <div className={`rounded-lg p-3 text-sm ${
@@ -228,24 +250,44 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>First Name</Label>
-                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            {showEditForm && (
+              <div className="space-y-4 px-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>First Name</Label>
+                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Last Name</Label>
+                    <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Username</Label>
+                  <Input value={username} onChange={(e) => setUsername(e.target.value)} />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} disabled={saving} className="flex-1">
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Changes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowEditForm(false);
+                      setMessage("");
+                      if (user) {
+                        setFirstName(user.first_name);
+                        setLastName(user.last_name);
+                        setUsername(user.username || "");
+                      }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Last Name</Label>
-                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Username</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} />
-            </div>
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+            )}
           </div>
         </div>
       </div>
