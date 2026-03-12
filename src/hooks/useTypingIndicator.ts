@@ -117,13 +117,16 @@ export function useTypingIndicator(conversationId: string | null) {
 
     channelRef.current = channel;
 
+    // Capture ref value for cleanup
+    const removalTimers = removalTimersRef.current;
+
     return () => {
       supabase.removeChannel(channel);
       setTypingUsers([]);
 
       // Clear all removal timers on cleanup
-      removalTimersRef.current.forEach((timer) => clearTimeout(timer));
-      removalTimersRef.current.clear();
+      removalTimers.forEach((timer) => clearTimeout(timer));
+      removalTimers.clear();
     };
     // Using stable zustand selectors — won't cause re-subscriptions
   }, [conversationId, addTypingUser, removeTypingUser, setTypingUsers]);
