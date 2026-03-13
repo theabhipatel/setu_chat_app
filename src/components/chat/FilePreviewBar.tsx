@@ -47,7 +47,7 @@ export function FilePreviewBar({ files, onRemove }: FilePreviewBarProps) {
                   {staged.category === "video" ? (
                     <Video className="h-4 w-4 text-violet-400" />
                   ) : staged.category === "audio" ? (
-                    <Music className="h-4 w-4 text-amber-400" />
+                    <Music className="h-4 w-4 text-warning" />
                   ) : (
                     <FileIcon className="h-4 w-4 text-blue-400" />
                   )}

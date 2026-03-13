@@ -76,7 +76,7 @@ export default function TestimonialsSection() {
               >
                 <div className="flex items-center gap-1 mb-3">
                   {Array.from({ length: 5 }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                    <Star key={j} className="h-3.5 w-3.5 fill-warning text-warning" />
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>

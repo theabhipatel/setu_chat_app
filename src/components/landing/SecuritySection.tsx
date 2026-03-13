@@ -40,7 +40,7 @@ export default function SecuritySection() {
                 </div>
               </div>
               {/* Orbiting dots */}
-              <div className="absolute top-2 right-4 w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="absolute top-2 right-4 w-3 h-3 rounded-full bg-success animate-pulse" />
               <div className="absolute bottom-4 left-2 w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: "0.5s" }} />
               <div className="absolute top-1/2 -right-2 w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" style={{ animationDelay: "1s" }} />
             </div>

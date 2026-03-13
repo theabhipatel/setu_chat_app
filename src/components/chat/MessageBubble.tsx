@@ -364,7 +364,7 @@ export function MessageBubble({
                 >
                   <span
                     className="font-semibold text-[11px]"
-                    style={{ color: isOwn ? "#fbbf24" : "#22d3ee" }}
+                    style={{ color: isOwn ? "hsl(var(--warning))" : "hsl(var(--info))" }}
                   >
                     {message.reply_message.sender?.first_name}
                   </span>

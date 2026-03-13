@@ -232,7 +232,7 @@ export default function DownloadSection() {
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
                   <h4 className="font-bold text-lg">Web Application</h4>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20 flex items-center gap-1">
                     <Check className="h-2.5 w-2.5" /> No install
                   </span>
                 </div>

@@ -283,7 +283,7 @@ export default function MainLayout({
               <div className="absolute inset-[-6px] rounded-full bg-emerald-500/15 animate-pulse" />
               {/* Inner circle */}
               <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500/15 to-teal-500/10 border border-emerald-500/25 backdrop-blur-sm">
-                <Wifi className="h-9 w-9 text-emerald-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+                <Wifi className="h-9 w-9 text-success drop-shadow-[0_0_8px_hsl(var(--success)/0.4)]" />
               </div>
               {/* Checkmark badge */}
               <div className="absolute -bottom-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30">
@@ -324,7 +324,7 @@ export default function MainLayout({
               <div className="absolute inset-[-4px] rounded-full bg-amber-500/5" />
               {/* Inner glow */}
               <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/15 to-rose-500/10 border border-amber-500/20 backdrop-blur-sm">
-                <WifiOff className="h-9 w-9 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
+                <WifiOff className="h-9 w-9 text-warning drop-shadow-[0_0_8px_hsl(var(--warning)/0.3)]" />
               </div>
             </div>
 

@@ -27,6 +27,14 @@
     --sidebar: 240 20% 97%;
     --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-accent: 243 75% 95%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 187 92% 53%;
+    --primary-light: 243 75% 70%;
+    --primary-gradient-end: 263 70% 58%;
+    --tertiary: 280 70% 60%;
   }
 
   .dark {
@@ -52,6 +60,14 @@
     --sidebar: 240 10% 5%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-accent: 243 75% 12%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 100%;
+    --info: 187 92% 53%;
+    --primary-light: 243 75% 70%;
+    --primary-gradient-end: 263 70% 58%;
+    --tertiary: 280 70% 60%;
   }
 }
 
@@ -75,16 +91,16 @@
 /* Using bright cyan/teal for maximum visibility against dark & purple backgrounds */
 @keyframes message-highlight-glow {
   0% {
-    box-shadow: 0 0 0 2.5px #22d3ee, 0 0 20px 6px rgba(34, 211, 238, 0.35);
-    background-color: rgba(34, 211, 238, 0.12);
+    box-shadow: 0 0 0 2.5px hsl(var(--info)), 0 0 20px 6px hsl(var(--info) / 0.35);
+    background-color: hsl(var(--info) / 0.12);
   }
   30% {
-    box-shadow: 0 0 0 2px #22d3ee, 0 0 28px 8px rgba(34, 211, 238, 0.25);
-    background-color: rgba(34, 211, 238, 0.08);
+    box-shadow: 0 0 0 2px hsl(var(--info)), 0 0 28px 8px hsl(var(--info) / 0.25);
+    background-color: hsl(var(--info) / 0.08);
   }
   60% {
-    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.6), 0 0 18px 5px rgba(34, 211, 238, 0.18);
-    background-color: rgba(34, 211, 238, 0.06);
+    box-shadow: 0 0 0 2px hsl(var(--info) / 0.6), 0 0 18px 5px hsl(var(--info) / 0.18);
+    background-color: hsl(var(--info) / 0.06);
   }
   100% {
     box-shadow: 0 0 0 0px transparent, 0 0 0 0px transparent;
@@ -100,25 +116,25 @@
 /* Reply preview inside message bubbles — OWN messages (purple bg) */
 /* Using warm amber/yellow tint for contrast against purple */
 .reply-preview-own {
-  background: rgba(251, 191, 36, 0.14);
-  border-left: 3px solid rgba(251, 191, 36, 0.6);
+  background: hsl(var(--warning) / 0.14);
+  border-left: 3px solid hsl(var(--warning) / 0.6);
   border-radius: 0.5rem;
 }
 
 .reply-preview-own:hover {
-  background: rgba(251, 191, 36, 0.22);
+  background: hsl(var(--warning) / 0.22);
 }
 
 /* Reply preview inside message bubbles — OTHER messages (dark bg) */
-/* Using teal/cyan accent */
+/* Using info accent */
 .reply-preview-other {
-  background: rgba(34, 211, 238, 0.08);
-  border-left: 3px solid rgba(34, 211, 238, 0.5);
+  background: hsl(var(--info) / 0.08);
+  border-left: 3px solid hsl(var(--info) / 0.5);
   border-radius: 0.5rem;
 }
 
 .reply-preview-other:hover {
-  background: rgba(34, 211, 238, 0.14);
+  background: hsl(var(--info) / 0.14);
 }
 
 /* ===== Teams-style Message Input ===== */
@@ -136,8 +152,8 @@
   gap: 8px;
   padding: 8px 12px;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(34, 211, 238, 0.02));
-  border: 1px solid rgba(34, 211, 238, 0.12);
+  background: linear-gradient(135deg, hsl(var(--info) / 0.08), hsl(var(--info) / 0.02));
+  border: 1px solid hsl(var(--info) / 0.12);
   border-radius: 12px;
   animation: replySlideIn 0.2s ease-out;
 }
@@ -146,14 +162,14 @@
   width: 3px;
   align-self: stretch;
   border-radius: 2px;
-  background: rgba(34, 211, 238, 0.6);
+  background: hsl(var(--info) / 0.6);
   flex-shrink: 0;
 }
 
 .msg-input-reply-name {
   font-size: 12px;
   font-weight: 600;
-  color: #22d3ee;
+  color: hsl(var(--info));
   line-height: 1.3;
 }
 
@@ -302,7 +318,7 @@
 }
 
 .msg-input-send-btn.active {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 58%));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-gradient-end)));
   color: #fff;
   cursor: pointer;
   box-shadow: 0 2px 10px hsl(var(--primary) / 0.3);
@@ -787,7 +803,7 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #818cf8, #6366f1, #a78bfa);
+  background: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--primary)), hsl(var(--tertiary) / 0.8));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -878,8 +894,8 @@
 .gradient-mesh {
   background:
     radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, hsl(243 75% 70% / 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, hsl(280 70% 60% / 0.08) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 20%, hsl(var(--primary-light) / 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, hsl(var(--tertiary) / 0.08) 0%, transparent 50%);
   animation: meshShift 12s ease-in-out infinite alternate;
 }
 
@@ -992,9 +1008,9 @@
   background: linear-gradient(
     135deg,
     hsl(var(--primary) / 0.3),
-    hsl(280 70% 60% / 0.3),
+    hsl(var(--tertiary) / 0.3),
     hsl(var(--primary) / 0.1),
-    hsl(243 75% 70% / 0.3)
+    hsl(var(--primary-light) / 0.3)
   );
   background-size: 300% 300%;
   animation: shimmerBorder 6s ease-in-out infinite;
@@ -1081,7 +1097,7 @@
 
 /* Gradient text extended */
 .gradient-text-hero {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(280 70% 60%), hsl(243 75% 70%));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--tertiary)), hsl(var(--primary-light)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1181,7 +1197,7 @@ html {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(280 70% 60% / 0.2), transparent, hsl(243 75% 70% / 0.3));
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--tertiary) / 0.2), transparent, hsl(var(--primary-light) / 0.3));
   z-index: -1;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -1452,7 +1468,7 @@ html {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #22c55e;
+  background: hsl(var(--success));
   border: 2px solid hsl(var(--card));
 }
 
@@ -1546,7 +1562,7 @@ html {
   gap: 6px;
   padding: 8px 20px;
   border: none;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 58%));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-gradient-end)));
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -1598,8 +1614,8 @@ html {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: hsl(142 76% 36% / 0.12);
-  border: 2px solid hsl(142 76% 36% / 0.3);
+  background: hsl(var(--success) / 0.12);
+  border: 2px solid hsl(var(--success) / 0.3);
   animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1661,28 +1677,28 @@ html {
 .network-banner--offline {
   background: linear-gradient(
     135deg,
-    rgba(245, 158, 11, 0.12) 0%,
-    rgba(239, 68, 68, 0.10) 100%
+    hsl(var(--warning) / 0.12) 0%,
+    hsl(var(--destructive) / 0.10) 100%
   );
-  border-bottom-color: rgba(245, 158, 11, 0.2);
+  border-bottom-color: hsl(var(--warning) / 0.2);
 }
 
 .dark .network-banner--offline {
   background: linear-gradient(
     135deg,
-    rgba(245, 158, 11, 0.08) 0%,
-    rgba(239, 68, 68, 0.06) 100%
+    hsl(var(--warning) / 0.08) 0%,
+    hsl(var(--destructive) / 0.06) 100%
   );
-  border-bottom-color: rgba(245, 158, 11, 0.12);
+  border-bottom-color: hsl(var(--warning) / 0.12);
 }
 
 .network-banner--reconnected {
   background: linear-gradient(
     135deg,
-    rgba(34, 197, 94, 0.12) 0%,
-    rgba(16, 185, 129, 0.08) 100%
+    hsl(var(--success) / 0.12) 0%,
+    hsl(var(--success) / 0.08) 100%
   );
-  border-bottom-color: rgba(34, 197, 94, 0.2);
+  border-bottom-color: hsl(var(--success) / 0.2);
   animation: bannerSlideDown 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
     bannerFadeOut 0.5s ease 2.5s forwards;
 }
@@ -1690,10 +1706,10 @@ html {
 .dark .network-banner--reconnected {
   background: linear-gradient(
     135deg,
-    rgba(34, 197, 94, 0.08) 0%,
-    rgba(16, 185, 129, 0.05) 100%
+    hsl(var(--success) / 0.08) 0%,
+    hsl(var(--success) / 0.05) 100%
   );
-  border-bottom-color: rgba(34, 197, 94, 0.12);
+  border-bottom-color: hsl(var(--success) / 0.12);
 }
 
 .network-banner__content {
@@ -1713,14 +1729,14 @@ html {
 }
 
 .network-banner__dot--offline {
-  background: #f59e0b;
-  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+  background: hsl(var(--warning));
+  box-shadow: 0 0 0 0 hsl(var(--warning) / 0.5);
   animation: dotPulse 1.5s infinite;
 }
 
 .network-banner__dot--online {
-  background: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+  background: hsl(var(--success));
+  box-shadow: 0 0 8px hsl(var(--success) / 0.5);
   animation: dotPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1732,11 +1748,11 @@ html {
 }
 
 .network-banner--offline .network-banner__icon {
-  color: #f59e0b;
+  color: hsl(var(--warning));
 }
 
 .network-banner--reconnected .network-banner__icon {
-  color: #22c55e;
+  color: hsl(var(--success));
 }
 
 /* Text */
@@ -1747,19 +1763,19 @@ html {
 }
 
 .network-banner--offline .network-banner__text {
-  color: #f59e0b;
+  color: hsl(var(--warning));
 }
 
 .dark .network-banner--offline .network-banner__text {
-  color: #fbbf24;
+  color: hsl(var(--warning));
 }
 
 .network-banner--reconnected .network-banner__text {
-  color: #16a34a;
+  color: hsl(var(--success));
 }
 
 .dark .network-banner--reconnected .network-banner__text {
-  color: #4ade80;
+  color: hsl(var(--success));
 }
 
 /* Subtext */
@@ -1779,20 +1795,20 @@ html {
   height: 26px;
   border-radius: 50%;
   border: none;
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  background: hsl(var(--warning) / 0.1);
+  color: hsl(var(--warning));
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
 .dark .network-banner__dismiss {
-  background: rgba(251, 191, 36, 0.08);
-  color: #fbbf24;
+  background: hsl(var(--warning) / 0.08);
+  color: hsl(var(--warning));
 }
 
 .network-banner__dismiss:hover {
-  background: rgba(245, 158, 11, 0.2);
+  background: hsl(var(--warning) / 0.2);
   transform: scale(1.1);
 }
 
@@ -1830,13 +1846,13 @@ html {
 
 @keyframes dotPulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 0 hsl(var(--warning) / 0.5);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 6px hsl(var(--warning) / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 0 hsl(var(--warning) / 0);
   }
 }
 

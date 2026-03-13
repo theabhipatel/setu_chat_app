@@ -69,10 +69,10 @@ export default function APISection() {
       <div className="absolute inset-0 tech-grid opacity-30" />
 
       {/* Floating thunder bolts */}
-      <div className="absolute top-16 left-[8%] animate-float text-amber-500/15">
+      <div className="absolute top-16 left-[8%] animate-float text-warning/15">
         <ThunderSvg className="w-16 h-16 rotate-12" />
       </div>
-      <div className="absolute bottom-20 right-[6%] animate-float-slow text-amber-500/10">
+      <div className="absolute bottom-20 right-[6%] animate-float-slow text-warning/10">
         <ThunderSvg className="w-12 h-12 -rotate-12" />
       </div>
       <div className="absolute top-1/2 right-[12%] animate-float-delay text-primary/10">
@@ -80,13 +80,13 @@ export default function APISection() {
       </div>
 
       {/* Orbs */}
-      <div className="orb w-[500px] h-[500px] bg-amber-500/8 -top-40 right-0" />
+      <div className="orb w-[500px] h-[500px] bg-warning/8 -top-40 right-0" />
       <div className="orb w-[400px] h-[400px] bg-primary/8 bottom-0 -left-40" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-20 animate-on-scroll">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/5 px-4 py-1.5 text-sm font-medium text-amber-500 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/5 px-4 py-1.5 text-sm font-medium text-warning mb-6">
             <ThunderSvg className="h-3.5 w-3.5" />
             Supercharged API
           </div>
@@ -104,7 +104,7 @@ export default function APISection() {
           {/* Left — API circuit visual */}
           <div className="animate-on-scroll-left flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-amber-500/5 rounded-3xl blur-3xl scale-90" />
+              <div className="absolute inset-0 bg-warning/5 rounded-3xl blur-3xl scale-90" />
               <div className="relative rounded-2xl border border-border/40 bg-card/50 backdrop-blur-xl p-8 sm:p-10 overflow-hidden">
                 {/* Powered by badge */}
                 <div className="flex items-center gap-2 mb-6">
@@ -112,7 +112,7 @@ export default function APISection() {
                     <ThunderSvg className="w-4 h-4" />
                   </div>
                   <span className="text-sm font-bold">Powered by Setu Engine</span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
                     v2.0
                   </span>
                 </div>
@@ -130,13 +130,13 @@ export default function APISection() {
                   </div>
                   <div className="text-center">
                     <p>Setu Engine</p>
-                    <p className="text-amber-500 font-semibold flex items-center gap-1 justify-center">
+                    <p className="text-warning font-semibold flex items-center gap-1 justify-center">
                       <ThunderSvg className="w-2.5 h-2.5" /> Powered
                     </p>
                   </div>
                   <div className="text-center">
                     <p>Recipients</p>
-                    <p className="text-emerald-500 font-semibold">Delivered</p>
+                    <p className="text-success font-semibold">Delivered</p>
                   </div>
                 </div>
 
@@ -155,7 +155,7 @@ export default function APISection() {
                   className="group flex items-start gap-3 p-3.5 rounded-xl border border-border/40 bg-card/30 hover:bg-card/60 hover:border-amber-500/20 transition-all duration-300"
                 >
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                    <f.icon className="h-4 w-4 text-amber-500" />
+                    <f.icon className="h-4 w-4 text-warning" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold">{f.label}</p>
@@ -171,14 +171,14 @@ export default function APISection() {
         <div className="animate-on-scroll">
           <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-xl p-8 sm:p-10 overflow-hidden relative">
             {/* Thunder background accents */}
-            <div className="absolute top-4 right-6 text-amber-500/5">
+            <div className="absolute top-4 right-6 text-warning/5">
               <ThunderSvg className="w-32 h-32" />
             </div>
             <div className="absolute bottom-4 left-6 text-primary/5">
               <ThunderSvg className="w-24 h-24 rotate-180" />
             </div>
 
-            <p className="text-sm font-semibold text-amber-500 uppercase tracking-widest mb-6 relative z-10">Get started in 3 steps</p>
+            <p className="text-sm font-semibold text-warning uppercase tracking-widest mb-6 relative z-10">Get started in 3 steps</p>
             <div className="grid sm:grid-cols-3 gap-6 relative z-10">
               {steps.map((s, i) => (
                 <div key={s.step} className="flex items-start gap-4">

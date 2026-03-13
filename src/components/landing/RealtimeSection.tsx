@@ -16,7 +16,7 @@ export default function RealtimeSection() {
     <section className="relative py-24 overflow-hidden">
       {/* Gradient that spans into next section */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-primary/[0.06]" />
-      <div className="orb w-[400px] h-[400px] bg-emerald-500/10 top-20 -left-40" />
+      <div className="orb w-[400px] h-[400px] bg-success/10 top-20 -left-40" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -50,7 +50,7 @@ export default function RealtimeSection() {
                 {/* Status bar */}
                 <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                     Abhi is online
                   </span>
                   <span className="flex items-center gap-1">

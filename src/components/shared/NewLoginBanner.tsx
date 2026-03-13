@@ -43,7 +43,7 @@ function SingleBanner({ session, onDismiss }: NewLoginBannerProps) {
 
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Icon */}
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 shrink-0">
+        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-warning/15 text-warning shrink-0">
           {getDeviceIcon(session.device_type)}
         </div>
 
@@ -66,7 +66,7 @@ function SingleBanner({ session, onDismiss }: NewLoginBannerProps) {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => router.push("/settings#sessions")}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-warning/15 hover:bg-warning/25 text-warning transition-colors"
           >
             View Sessions
             <ChevronRight className="h-3 w-3" />

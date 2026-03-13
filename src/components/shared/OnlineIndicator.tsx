@@ -22,7 +22,7 @@ export function OnlineIndicator({
       className={cn(
         "rounded-full border-2 border-background",
         sizeClasses[size],
-        isOnline ? "bg-emerald-500" : "bg-gray-400",
+        isOnline ? "bg-success" : "bg-gray-400",
         isOnline && "animate-pulse-dot",
         className
       )}

@@ -131,7 +131,7 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
           <h3 className="font-semibold text-sm">{name}</h3>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             {!isGroup && isOnline && (
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
             )}
             {subtitle}
           </p>

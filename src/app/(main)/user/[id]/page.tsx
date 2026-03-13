@@ -105,7 +105,7 @@ export default function PublicProfilePage() {
             className="h-32 sm:h-40 w-full"
             style={{
               background:
-                "linear-gradient(135deg, hsl(243 75% 59% / 0.5), hsl(280 70% 50% / 0.4), hsl(243 75% 40% / 0.6))",
+                "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--tertiary) / 0.4), hsl(var(--primary) / 0.6))",
             }}
           />
 

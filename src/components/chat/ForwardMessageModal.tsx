@@ -276,7 +276,7 @@ export function ForwardMessageModal() {
     if (forwardingMessage.message_type === "image")
       return <ImageIcon className="h-4 w-4 text-blue-400" />;
     if (forwardingMessage.message_type === "file")
-      return <FileText className="h-4 w-4 text-amber-400" />;
+      return <FileText className="h-4 w-4 text-warning" />;
     return null;
   };
 
@@ -302,9 +302,9 @@ export function ForwardMessageModal() {
         {forwardSuccess ? (
           <div className="fwd-modal-success">
             <div className="fwd-modal-success-icon">
-              <Check className="h-8 w-8 text-emerald-400" />
+              <Check className="h-8 w-8 text-success" />
             </div>
-            <p className="text-sm font-medium text-emerald-400">
+            <p className="text-sm font-medium text-success">
               Message forwarded successfully!
             </p>
           </div>

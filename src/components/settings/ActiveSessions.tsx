@@ -292,7 +292,7 @@ export function ActiveSessions() {
                       {session.device_name}
                     </p>
                     {session.is_current && (
-                      <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                      <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-success/15 text-success border border-success/20">
                         This device
                       </span>
                     )}
@@ -310,11 +310,11 @@ export function ActiveSessions() {
                     <span className="text-muted-foreground/40">·</span>
                     <span
                       className={`shrink-0 ${
-                        isActive ? "text-emerald-400" : ""
+                        isActive ? "text-success" : ""
                       }`}
                     >
                       {isActive && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-success mr-1 animate-pulse" />
                       )}
                       {lastActive}
                     </span>

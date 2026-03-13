@@ -131,13 +131,13 @@ export default function TechShowcase() {
 
               {/* Orbiting elements */}
               <div className="absolute -top-2 right-6 animate-pulse">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                  <Zap className="h-4 w-4 text-amber-500" />
+                <div className="w-8 h-8 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-warning" />
                 </div>
               </div>
               <div className="absolute -bottom-2 left-6 animate-pulse" style={{ animationDelay: "1s" }}>
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <Gauge className="h-4 w-4 text-emerald-500" />
+                <div className="w-8 h-8 rounded-lg bg-success/10 border border-success/20 flex items-center justify-center">
+                  <Gauge className="h-4 w-4 text-success" />
                 </div>
               </div>
               <div className="absolute top-1/2 -right-4 animate-pulse" style={{ animationDelay: "0.5s" }}>

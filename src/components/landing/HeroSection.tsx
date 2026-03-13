@@ -79,7 +79,7 @@ export default function HeroSection() {
       <div className="hidden xl:block absolute bottom-28 left-[5%] animate-float-delay text-primary/15">
         <CircuitSvg className="w-24 h-24 -rotate-6" />
       </div>
-      <div className="hidden xl:block absolute top-[42%] left-[3%] animate-float text-amber-500/20">
+      <div className="hidden xl:block absolute top-[42%] left-[3%] animate-float text-warning/20">
         <BoltSvg className="w-10 h-10" />
       </div>
 
@@ -121,8 +121,8 @@ export default function HeroSection() {
             {/* Feature pills */}
             <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
               {[
-                { icon: Zap, label: "Blazing Fast", color: "text-amber-500" },
-                { icon: Shield, label: "Secure", color: "text-emerald-500" },
+                { icon: Zap, label: "Blazing Fast", color: "text-warning" },
+                { icon: Shield, label: "Secure", color: "text-success" },
                 { icon: Users, label: "Groups & 1-on-1", color: "text-blue-500" },
               ].map((t) => (
                 <div
@@ -153,15 +153,15 @@ export default function HeroSection() {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white text-sm font-bold">S</div>
                     <div className="flex-1">
                       <p className="font-semibold text-sm">Setu Team</p>
-                      <p className="text-xs text-emerald-500 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                      <p className="text-xs text-success flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success inline-block animate-pulse" />
                         Online
                       </p>
                     </div>
                     <div className="flex gap-1.5">
                       <span className="w-3 h-3 rounded-full bg-red-500/80" />
-                      <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                      <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                      <span className="w-3 h-3 rounded-full bg-warning/80" />
+                      <span className="w-3 h-3 rounded-full bg-success/80" />
                     </div>
                   </div>
                   {/* Messages */}
@@ -204,8 +204,8 @@ export default function HeroSection() {
               {/* Floating status card */}
               <div className="absolute -bottom-6 -left-12 animate-float-delay">
                 <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/50 px-4 py-3 shadow-lg flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-emerald-500" />
+                  <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-success" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold">3 online now</p>

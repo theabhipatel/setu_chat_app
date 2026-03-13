@@ -4,8 +4,8 @@ import { MessageSquare, Users, Zap, Globe, TrendingUp } from "lucide-react";
 
 const stats = [
   { icon: MessageSquare, label: "Messages Sent Daily", value: "10M+", color: "text-primary", gradient: "from-primary/20 to-violet-500/20", borderGlow: "group-hover:shadow-primary/20" },
-  { icon: Users, label: "Active Users", value: "500K+", color: "text-emerald-500", gradient: "from-emerald-500/20 to-teal-500/20", borderGlow: "group-hover:shadow-emerald-500/20" },
-  { icon: Zap, label: "Uptime Guarantee", value: "99.9%", color: "text-amber-500", gradient: "from-amber-500/20 to-orange-500/20", borderGlow: "group-hover:shadow-amber-500/20" },
+  { icon: Users, label: "Active Users", value: "500K+", color: "text-success", gradient: "from-success/20 to-success/10", borderGlow: "group-hover:shadow-success/20" },
+  { icon: Zap, label: "Uptime Guarantee", value: "99.9%", color: "text-warning", gradient: "from-warning/20 to-warning/10", borderGlow: "group-hover:shadow-warning/20" },
   { icon: Globe, label: "Countries", value: "120+", color: "text-blue-500", gradient: "from-blue-500/20 to-cyan-500/20", borderGlow: "group-hover:shadow-blue-500/20" },
 ];
 
@@ -32,7 +32,7 @@ export default function StatsSection() {
                 </div>
                 <p className="text-3xl sm:text-4xl font-extrabold tracking-tight counter-mono">{s.value}</p>
                 <p className="text-sm text-muted-foreground mt-1.5 flex items-center justify-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  <TrendingUp className="h-3 w-3 text-success" />
                   {s.label}
                 </p>
               </div>
