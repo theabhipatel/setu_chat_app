@@ -103,7 +103,7 @@ export function FileCard({ file, isOwn }: FileCardProps) {
             className={`shrink-0 p-2 rounded-full transition-colors ${
               isOwn
                 ? "hover:bg-primary-foreground/20 text-primary-foreground/70"
-                : "hover:bg-accent text-muted-foreground"
+                : "hover:bg-primary/[0.06] text-muted-foreground"
             }`}
           >
             <Download className="h-4 w-4" />

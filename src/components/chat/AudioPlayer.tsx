@@ -197,7 +197,7 @@ export function AudioPlayer({ file, isOwn }: AudioPlayerProps) {
               className={`shrink-0 p-1.5 rounded-full transition-colors ${
                 isOwn
                   ? "hover:bg-primary-foreground/20 text-primary-foreground/70"
-                  : "hover:bg-accent text-muted-foreground"
+                  : "hover:bg-primary/[0.06] text-muted-foreground"
               }`}
             >
               <Download className="h-4 w-4" />

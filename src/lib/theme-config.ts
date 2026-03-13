@@ -30,6 +30,8 @@ export const THEME_PRESETS: ThemePreset[] = [
       "--tertiary": "285 65% 60%",
       "--ring": "250 67% 55%",
       "--sidebar-accent": "250 67% 95%",
+      "--accent": "250 67% 95%",
+      "--accent-foreground": "250 67% 25%",
     },
   },
   {
@@ -45,6 +47,8 @@ export const THEME_PRESETS: ThemePreset[] = [
       "--tertiary": "190 80% 52%",
       "--ring": "217 90% 55%",
       "--sidebar-accent": "217 80% 95%",
+      "--accent": "217 80% 95%",
+      "--accent-foreground": "217 80% 25%",
     },
   },
   {
@@ -60,6 +64,8 @@ export const THEME_PRESETS: ThemePreset[] = [
       "--tertiary": "20 85% 58%",
       "--ring": "340 75% 55%",
       "--sidebar-accent": "340 70% 95%",
+      "--accent": "340 70% 95%",
+      "--accent-foreground": "340 70% 25%",
     },
   },
 ];
@@ -68,12 +74,18 @@ export const THEME_PRESETS: ThemePreset[] = [
 const DARK_OVERRIDES: Record<ThemePresetId, Record<string, string>> = {
   "midnight-violet": {
     "--sidebar-accent": "250 67% 12%",
+    "--accent": "250 67% 15%",
+    "--accent-foreground": "250 30% 90%",
   },
   "ocean-sapphire": {
     "--sidebar-accent": "217 80% 12%",
+    "--accent": "217 80% 15%",
+    "--accent-foreground": "217 30% 90%",
   },
   "rose-ember": {
     "--sidebar-accent": "340 70% 12%",
+    "--accent": "340 70% 15%",
+    "--accent-foreground": "340 30% 90%",
   },
 };
 

@@ -169,7 +169,7 @@ export function CreateGroupModal({ open, onClose }: CreateGroupModalProps) {
                   <button
                     key={user.id}
                     onClick={() => toggleUser(user)}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent rounded-md transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-primary/[0.06] rounded-md transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">

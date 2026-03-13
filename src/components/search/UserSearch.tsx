@@ -130,7 +130,7 @@ export function UserSearch({ onSelect }: UserSearchProps) {
             <button
               key={user.id}
               onClick={() => handleSelect(user)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-accent transition-colors text-left"
+              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-primary/[0.06] transition-colors text-left"
             >
               <div className="relative">
                 <Avatar className="h-9 w-9">

@@ -100,7 +100,7 @@ export function AttachmentMenu({
           <button
             key={item.label}
             onClick={item.onClick}
-            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors duration-150"
+            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-primary/[0.06] transition-colors duration-150"
           >
             <div className={`flex items-center justify-center w-9 h-9 rounded-lg ${item.bgColor}`}>
               <item.icon className={`h-[18px] w-[18px] ${item.color}`} />
