@@ -7,6 +7,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { createClient } from "@/lib/supabase/client";
 import {
+  THEME_PRESETS,
+  getStoredTheme,
+  applyThemePreset,
+  type ThemePresetId,
+} from "@/lib/theme-config";
+import {
   setPasswordSchema,
   changePasswordSchema,
   type SetPasswordInput,
@@ -45,6 +51,8 @@ import {
   CheckCircle2,
   Loader2,
   Pencil,
+  Palette,
+  Check,
 } from "lucide-react";
 
 // Google icon SVG component
@@ -74,6 +82,7 @@ export default function SettingsPage() {
   const { user, setUser, updateUser } = useAuthStore();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const sessionsRef = useRef<HTMLDivElement>(null);
+  const [activeTheme, setActiveTheme] = useState<ThemePresetId>("midnight-violet");
 
   // Linked accounts state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -115,6 +124,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setSoundEnabled(isNotificationSoundEnabled());
+    setActiveTheme(getStoredTheme());
   }, []);
 
   // Auto-scroll to sessions section if URL has #sessions
@@ -314,6 +324,49 @@ export default function SettingsPage() {
               </div>
               <ThemeToggle />
             </div>
+            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <Palette className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Theme Color</p>
+                  <p className="text-xs text-muted-foreground">Choose your accent color</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                {THEME_PRESETS.map((preset) => {
+                  const isActive = activeTheme === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        setActiveTheme(preset.id);
+                        applyThemePreset(preset.id);
+                      }}
+                      className="group relative flex items-center justify-center"
+                      title={preset.name}
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-full transition-all duration-200 ${
+                          isActive
+                            ? "ring-2 ring-offset-2 ring-offset-background scale-110"
+                            : "hover:scale-110"
+                        }`}
+                        style={{
+                          backgroundColor: preset.swatch,
+                          boxShadow: isActive
+                            ? `0 0 12px ${preset.swatch}60`
+                            : undefined,
+                          "--tw-ring-color": isActive ? preset.swatch : undefined,
+                        } as React.CSSProperties}
+                      />
+                      {isActive && (
+                        <Check className="absolute h-3.5 w-3.5 text-white drop-shadow-sm" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <Separator />
@@ -411,7 +464,7 @@ export default function SettingsPage() {
                 </div>
                 {hasGoogle ? (
                   <Badge variant="secondary" className="text-xs gap-1">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    <CheckCircle2 className="h-3 w-3 text-success" />
                     Connected
                   </Badge>
                 ) : (
@@ -460,7 +513,7 @@ export default function SettingsPage() {
                         Change
                       </Button>
                       <Badge variant="secondary" className="text-xs gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        <CheckCircle2 className="h-3 w-3 text-success" />
                         Set
                       </Badge>
                     </>
@@ -490,7 +543,7 @@ export default function SettingsPage() {
 
               {/* Password Success */}
               {passwordSuccess && (
-                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-sm text-emerald-500">
+                <div className="rounded-lg bg-success/10 border border-success/20 p-3 text-sm text-success">
                   {passwordSuccess}
                 </div>
               )}
@@ -594,7 +647,7 @@ export default function SettingsPage() {
 
               {/* Change Password Success */}
               {changePasswordSuccess && (
-                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-sm text-emerald-500">
+                <div className="rounded-lg bg-success/10 border border-success/20 p-3 text-sm text-success">
                   {changePasswordSuccess}
                 </div>
               )}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastContainer } from "@/components/shared/ToastContainer";
+import { ThemeColorProvider } from "@/components/shared/ThemeColorProvider";
 import TauriDeepLinkHandler from "@/components/auth/TauriDeepLinkHandler";
 import "./globals.css";
 
@@ -29,11 +30,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider delayDuration={200}>
-            {children}
-            <ToastContainer />
-            <TauriDeepLinkHandler />
-          </TooltipProvider>
+          <ThemeColorProvider>
+            <TooltipProvider delayDuration={200}>
+              {children}
+              <ToastContainer />
+              <TauriDeepLinkHandler />
+            </TooltipProvider>
+          </ThemeColorProvider>
         </ThemeProvider>
       </body>
     </html>

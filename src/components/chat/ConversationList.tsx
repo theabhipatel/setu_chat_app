@@ -107,10 +107,10 @@ export function ConversationList() {
       <button
         key={conversation.id}
         onClick={() => router.push(`/chat/${conversation.id}`)}
-        className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-all duration-150 hover:bg-accent/50 ${
+        className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-all duration-150 hover:bg-primary/[0.06] ${
           isActive
-            ? "bg-accent shadow-sm"
-            : ""
+            ? "bg-primary/[0.10] border-l-[3px] border-primary"
+            : "border-l-[3px] border-transparent"
         }`}
       >
         {/* Avatar */}
