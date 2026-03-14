@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { OnlineIndicator } from "@/components/shared/OnlineIndicator";
 import { ConversationListSkeleton } from "@/components/shared/LoadingSkeleton";
+import { SuggestedUsers } from "@/components/chat/SuggestedUsers";
 import { getInitials, formatDate, truncate } from "@/lib/utils";
 import { Users, Bookmark, Pin } from "lucide-react";
 import type { ConversationWithDetails } from "@/types";
@@ -19,12 +20,16 @@ export function ConversationList() {
 
   if (!conversationsLoaded) return <ConversationListSkeleton />;
 
+  // Count non-self conversations for the suggestion threshold
+  const nonSelfConversationCount = conversations.filter((c) => c.type !== "self").length;
+
   if (conversations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <p className="text-muted-foreground text-sm">
+      <div className="flex flex-col items-center justify-center p-6 text-center">
+        <p className="text-muted-foreground text-sm mb-2">
           No conversations yet. Search for users to start chatting!
         </p>
+        <SuggestedUsers />
       </div>
     );
   }
@@ -215,6 +220,11 @@ export function ConversationList() {
             {recentConversations.map(renderConversationItem)}
           </div>
         </div>
+      )}
+
+      {/* Suggested Users — at the bottom, show when fewer than 5 non-self conversations */}
+      {nonSelfConversationCount < 5 && (
+        <SuggestedUsers />
       )}
     </div>
   );
