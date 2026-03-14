@@ -9,7 +9,6 @@ import { useChatStore } from "@/stores/useChatStore";
 import { UserSearch } from "@/components/search/UserSearch";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { CreateGroupModal } from "@/components/group/CreateGroupModal";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -109,7 +108,6 @@ export function Sidebar() {
           <h1 className="text-xl font-bold gradient-text">Setu</h1>
         </button>
         <div className="flex items-center gap-1">
-          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -32,11 +33,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { ActiveSessions } from "@/components/settings/ActiveSessions";
 import {
   ArrowLeft,
   Moon,
+  Sun,
   Bell,
   Volume2,
   VolumeX,
@@ -80,6 +81,7 @@ const GoogleIcon = ({ className }: { className?: string }) => (
 export default function SettingsPage() {
   const router = useRouter();
   const { user, setUser, updateUser } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const sessionsRef = useRef<HTMLDivElement>(null);
   const [activeTheme, setActiveTheme] = useState<ThemePresetId>("midnight-violet");
@@ -322,7 +324,13 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">Toggle dark/light mode</p>
                 </div>
               </div>
-              <ThemeToggle />
+              <button
+                aria-label="Toggle theme"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-lg hover:bg-primary/[0.06] transition-colors text-muted-foreground hover:text-foreground"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-3">
