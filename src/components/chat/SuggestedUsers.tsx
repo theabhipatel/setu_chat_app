@@ -50,6 +50,7 @@ export function SuggestedUsers() {
         if (!data.existing) {
           addConversation(data.data as ConversationWithDetails);
         }
+        setSuggestedUsers((prev) => prev.filter((u) => u.id !== user.id));
         router.push(`/chat/${data.data.id}`);
       }
     } catch (error) {
