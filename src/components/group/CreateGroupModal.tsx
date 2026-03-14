@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { getInitials } from "@/lib/utils";
 import { Search, Loader2, X, Check } from "lucide-react";
 import type { SearchResult, ConversationWithDetails } from "@/types";
@@ -157,7 +156,7 @@ export function CreateGroupModal({ open, onClose }: CreateGroupModalProps) {
           </div>
 
           {/* Results */}
-          <ScrollArea className="max-h-48">
+          <div className="max-h-[156px] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             {isSearching ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -190,7 +189,7 @@ export function CreateGroupModal({ open, onClose }: CreateGroupModalProps) {
                 );
               })
             )}
-          </ScrollArea>
+          </div>
 
           <Button
             onClick={handleCreate}
