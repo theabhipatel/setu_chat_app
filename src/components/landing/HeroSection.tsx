@@ -226,8 +226,8 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 noise-overlay">
       {/* Background */}
-      <div className="absolute inset-0 gradient-mesh" />
-      <div className="absolute inset-0 dot-grid opacity-30" />
+      <div className="absolute inset-0 gradient-mesh pointer-events-none" />
+      <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
       <div className="orb w-[500px] h-[500px] bg-primary/20 -top-40 -left-40" />
       <div className="orb w-[400px] h-[400px] bg-purple-500/15 -bottom-32 -right-32" />
       <div className="orb w-[300px] h-[300px] bg-indigo-400/10 top-1/3 right-1/4" />
@@ -295,21 +295,21 @@ export default function HeroSection() {
                 </Button>
               </Link>
 
-              <a href="/setu.v1.0.apk" download>
-                <button
-                  className="h-12 px-6 text-base font-semibold gap-2.5 w-full sm:w-auto group inline-flex items-center justify-center rounded-md bg-card/80 backdrop-blur-sm border border-border/60 text-foreground shadow-lg shadow-primary/5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-                >
-                  <Image
-                    src={ANDROID_ICON}
-                    alt="Android"
-                    width={22}
-                    height={22}
-                    className="drop-shadow-md"
-                    unoptimized
-                  />
-                  <span>Download APK</span>
-                  <Download className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                </button>
+              <a
+                href="/setu.v1.0.apk"
+                download
+                className="h-12 px-6 text-base font-semibold gap-2.5 w-full sm:w-auto group inline-flex items-center justify-center rounded-md bg-card/80 backdrop-blur-sm border border-border/60 text-foreground shadow-lg shadow-primary/5 cursor-pointer hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+              >
+                <Image
+                  src={ANDROID_ICON}
+                  alt="Android"
+                  width={22}
+                  height={22}
+                  className="drop-shadow-md"
+                  unoptimized
+                />
+                <span>Download APK</span>
+                <Download className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
               </a>
             </div>
 
@@ -343,8 +343,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right — Dual Device Mockup */}
-          <div className="hidden lg:flex justify-center">
+          {/* Right — Dual Device Mockup (decorative only, must not capture cursor) */}
+          <div className="hidden lg:flex justify-center pointer-events-none">
             <div className="relative hero-perspective">
               {/* Pulse rings behind everything */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[460px] h-[460px]">
